@@ -1,0 +1,39 @@
+.btn-default:active,
+.btn-default:focus {
+    outline: none;
+    background-color: #fff;
+    border-color: #ccc;
+}
+
+.navbar .form-group {
+    margin: 0 10px 0 0;
+}
+
+.content {
+    padding: 0 0 30px 0;
+}
+
+.content .log {
+    white-space:pre-wrap;
+    word-wrap:break-word;
+}
+
+.content .data {
+    margin: 20px 0 0 0;
+}
+
+.content .graph-data {
+    margin: 40px 0 0 0;
+}
+
+.content .graph-data .graph {
+    margin: 20px 0 0 0;
+}
+
+.form-inline .form-group {
+    margin: 0 10px 0 0;
+}
+
+.form-inline .form-group label {
+    margin: 0 10px 0 0;
+}

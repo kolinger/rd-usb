@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block content %}
+    <form class="form-inline" method="get">
+        <div class="form-group">
+            <label for="name">Session name</label>
+            <select class="form-control" name="name">
+                <option value="current"{% if selected == "current" %} selected{% endif %}>current</option>
+                {% for name in names %}
+                    <option value="{{ name }}"{% if name == selected %} selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-default">Select</button>
+    </form>
+
+    <div class="data">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Voltage</th>
+                    <th>Current</th>
+                    <th>Power</th>
+                    <th>Temperature</th>
+                    <th>Data +/-</th>
+                    <th>Mode</th>
+                    <th>Accumulated</th>
+                    <th>Resistance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in measurements %}
+                    <tr>
+                        <td>{{ format.time(item) }}</td>
+                        <td>{{ format.voltage(item) }}</td>
+                        <td>{{ format.current(item) }}</td>
+                        <td>{{ format.power(item) }}</td>
+                        <td>{{ format.temperature(item) }}</td>
+                        <td>{{ format.data(item) }}</td>
+                        <td>{{ format.mode(item) }}</td>
+                        <td>{{ format.accumulated(item) }}</td>
+                        <td>{{ format.resistance(item) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

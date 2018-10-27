@@ -1,0 +1,35 @@
+import logging
+from logging import StreamHandler
+import sys
+
+from flask import Flask
+import socketio
+
+from utils.storage import Storage
+from webapp.backend import Backend
+from webapp.index import Index
+
+port = 5000
+if len(sys.argv) > 1:
+    port = int(sys.argv[1])
+
+app = Flask(__name__)
+app.register_blueprint(Index().register())
+
+sockets = socketio.Server(async_mode="threading")
+app.wsgi_app = socketio.Middleware(sockets, app.wsgi_app)
+sockets.register_namespace(Backend())
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+
+console = StreamHandler()
+console.setLevel(logging.DEBUG)
+console.setFormatter(formatter)
+logger.addHandler(console)
+
+Storage().init()
+
+if __name__ == "__main__":
+    app.run(port=port, threaded=True)

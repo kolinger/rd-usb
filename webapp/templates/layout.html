@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <title>UM34C</title>
+
+    <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="shortcut icon" />
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
+</head>
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a href="{{ url_for('index.default') }}" class="navbar-brand">UM34C</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li{% if page == "default" %} class="active"{% endif %}>
+                    <a href="{{ url_for('index.default') }}" >Log</a>
+                </li>
+                <li{% if page == "data" %} class="active"{% endif %}>
+                    <a href="{{ url_for('index.data') }}">Data</a>
+                </li>
+                <li{% if page == "graph" %} class="active"{% endif %}>
+                    <a href="{{ url_for('index.graph') }}">Graph</a>
+                </li>
+            </ul>
+            <form class="navbar-form navbar-right" id="connect">
+                <div class="form-group" id="status">{{ status }}</div>
+                <div class="form-group">
+                    <input type="text" class="form-control" name="port" placeholder="Serial port" style="width:110px"
+                           value="{{ port }}" {% if connect_disabled %}disabled {% endif %}/>
+                </div>
+                <div class="form-group">Name</div>
+                <div class="form-group">
+                    <input type="text" class="form-control" name="name"
+                           value="{{ name }}" {% if connect_disabled %}disabled {% endif %}/>
+                </div>
+                <div class="form-group">Rate</div>
+                <div class="form-group">
+                    <select class="form-control" name="rate" {% if connect_disabled %}disabled {% endif %}>
+                        <option value="0.1"{% if rate == "0.1" %} selected{% endif %}>100ms</option>
+                        <option value="0.5"{% if rate == "0.25" %} selected{% endif %}>250ms</option>
+                        <option value="0.5"{% if rate == "0.5" %} selected{% endif %}>500ms</option>
+                        <option value="1"{% if rate == "1.0" %} selected{% endif %}>1s</option>
+                        <option value="5"{% if rate == "5.0" %} selected{% endif %}>5s</option>
+                        <option value="10"{% if rate == "10.0" %} selected{% endif %}>10s</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-default">{{ connect_button }}</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Chart.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/application.js') }}"></script>
+</body>
+</html>

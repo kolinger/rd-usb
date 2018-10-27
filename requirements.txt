@@ -1,0 +1,4 @@
+Flask==0.12.1
+Arrow==0.10.0
+pyserial==3.4
+python-socketio==2.0.0
