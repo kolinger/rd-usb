@@ -1,7 +1,9 @@
+import csv
+import io
 import os
 
 import arrow
-from flask import url_for, request, jsonify, redirect, flash
+from flask import url_for, request, jsonify, redirect, flash, make_response
 from flask.blueprints import Blueprint
 from flask.templating import render_template
 
@@ -59,7 +61,31 @@ class Index:
 
         measurements = self.storage.fetch_measurements(name)
 
-        if request.args.get("destroy") == "":
+        if request.args.get("export") == "":
+            string = io.StringIO()
+            writer = csv.writer(string)
+            format = Format()
+
+            names = []
+            for field in format.export_fields:
+                names.append(format.field_name(field))
+            writer.writerow(names)
+
+            for item in measurements:
+                values = []
+                for field in format.export_fields:
+                    if field == "time":
+                        values.append(format.time(item))
+                    else:
+                        values.append(item[field])
+                writer.writerow(values)
+
+            output = make_response(string.getvalue())
+            output.headers["Content-Disposition"] = "attachment; filename=" + name + ".csv"
+            output.headers["Content-type"] = "text/csv"
+            return output
+
+        elif request.args.get("destroy") == "":
             self.storage.destroy_measurements(name)
             flash("Measurements with session name '" + name + "' were deleted", "danger")
             return redirect(request.path)

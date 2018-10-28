@@ -6,16 +6,33 @@ class Format:
     table_fields = ["time", "voltage", "current", "power", "temperature", "data", "mode", "accumulated", "resistance"]
     graph_fields = [
         "timestamp", "voltage", "current", "power", "temperature",
-        "resistance", "accumulated_current","accumulated_power"
+        "resistance", "accumulated_current", "accumulated_power",
     ]
+    export_fields = [
+        "time", "voltage", "current", "power", "temperature", "data_plus", "data_minus", "resistance",
+        "accumulated_current", "accumulated_power", "accumulated_time",
+    ]
+    field_names = {
+        "time": "Time",
+        "voltage": "Voltage (V)",
+        "current": "Current (A)",
+        "power": "Power (W)",
+        "temperature": "Temperature (°C)",
+        "data_plus": "Data+ (V)",
+        "data_minus": "Data- (V)",
+        "resistance": "Resistance (Ω)",
+        "accumulated_current": "Accumulated current (mAh)",
+        "accumulated_power": "Accumulated power (mWh)",
+        "accumulated_time": "Accumulated time (seconds)",
+    }
 
     def __init__(self):
         pass
 
     def time(self, data):
         time = arrow.get(data["timestamp"])
-        time = time.replace(tzinfo=tz.gettz("UTC")).to(tz=tz.gettz("Europe/Prague"))
-        return time.format("DD.MM.YYYY HH:mm:ss")
+        time = time.replace(tzinfo=tz.gettz("UTC")).to("local")
+        return time.format("YYYY-MM-DD HH:mm:ss")
 
     def timestamp(self, data):
         return data["timestamp"] * 1000
@@ -59,3 +76,8 @@ class Format:
 
     def resistance(self, data):
         return str(data["resistance"]) + " Ω"
+
+    def field_name(self, field):
+        if field in self.field_names:
+            return self.field_names[field]
+        return field
