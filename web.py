@@ -25,6 +25,8 @@ if not secret_key:
     config.write("secret_key", secret_key)
 app.secret_key = secret_key
 
+Storage().init()
+
 sockets = socketio.Server(async_mode="threading")
 app.wsgi_app = socketio.Middleware(sockets, app.wsgi_app)
 sockets.register_namespace(Backend())
@@ -37,8 +39,6 @@ console = StreamHandler()
 console.setLevel(logging.DEBUG)
 console.setFormatter(formatter)
 logger.addHandler(console)
-
-Storage().init()
 
 if __name__ == "__main__":
     app.run(port=port, threaded=True)
