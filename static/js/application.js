@@ -4,9 +4,11 @@ ntdrt.application = {
     init: function () {
         var self = ntdrt.application;
 
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
-        socket.on('connect', function () {
+        $(document).on('click', '[data-confirm]', function (e) {
+            return confirm($(this).attr('data-confirm'));
         });
+
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
 
         socket.on('connecting', function () {
             $('#status').text('Connecting');
@@ -127,7 +129,7 @@ ntdrt.application = {
                                 mode: 'index',
                                 intersect: false,
                                 callbacks: {
-                                    labelColor: function(tooltipItem, chart) {
+                                    labelColor: function (tooltipItem, chart) {
                                         var data = chart.config.data.datasets[tooltipItem.datasetIndex];
                                         return {
                                             backgroundColor: data['borderColor'][0]

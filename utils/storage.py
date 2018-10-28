@@ -90,6 +90,11 @@ class Storage:
             cursor = sqlite.cursor()
             cursor.execute("INSERT INTO measurements (" + columns + ") VALUES (" + placeholders + ")", values)
 
+    def destroy_measurements(self, name):
+        with sqlite3.connect(**self.parameters) as sqlite:
+            cursor = sqlite.cursor()
+            cursor.execute("DELETE FROM measurements WHERE name = ?", (name,))
+
     def fetch_measurement_names(self):
         with self.connect() as sqlite:
             cursor = sqlite.cursor()
@@ -107,11 +112,6 @@ class Storage:
 
         with self.connect() as sqlite:
             cursor = sqlite.cursor()
-
-            if name == "current":
-                cursor.execute("SELECT name FROM measurements ORDER BY timestamp DESC LIMIT 1")
-                name = cursor.fetchone()["name"]
-
             cursor.execute("SELECT * FROM measurements WHERE name = ? ORDER BY timestamp ASC", (name,))
             return cursor.fetchall()
 
@@ -120,6 +120,14 @@ class Storage:
             cursor = sqlite.cursor()
             cursor.execute("SELECT * FROM measurements ORDER BY timestamp DESC LIMIT 1")
             return cursor.fetchone()
+
+    def translate_selected_name(self, selected):
+        if selected == "current":
+            last = self.fetch_last_measurement()
+            if last:
+                return last["name"]
+
+        return selected
 
     def log(self, message):
         with sqlite3.connect(**self.parameters) as sqlite:

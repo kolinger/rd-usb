@@ -1,7 +1,7 @@
 import os
 
 import arrow
-from flask import url_for, request, jsonify
+from flask import url_for, request, jsonify, redirect, flash
 from flask.blueprints import Blueprint
 from flask.templating import render_template
 
@@ -55,7 +55,14 @@ class Index:
         self.init()
 
         names, selected = self.prepare_selection()
-        measurements = self.storage.fetch_measurements(selected)
+        name = self.storage.translate_selected_name(selected)
+
+        measurements = self.storage.fetch_measurements(name)
+
+        if request.args.get("destroy") == "":
+            self.storage.destroy_measurements(name)
+            flash("Measurements with session name '" + name + "' were deleted", "danger")
+            return redirect(request.path)
 
         return render_template(
             "data.html",
@@ -87,7 +94,9 @@ class Index:
     def render_graph_data(self):
         self.init()
 
-        name = request.args.get("name")
+        selected = request.args.get("name")
+        name = self.storage.translate_selected_name(selected)
+
         left_axis = request.args.get("left_axis")
         right_axis = request.args.get("right_axis")
 
