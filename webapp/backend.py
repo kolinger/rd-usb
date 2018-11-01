@@ -86,7 +86,7 @@ class Daemon:
                 self.log(json.dumps(data))
                 if data:
                     data["name"] = self.config.read("name")
-                self.update(data)
+                    self.update(data)
                 self.storage.store_measurement(data)
                 time.sleep(self.config.read("rate"))
 

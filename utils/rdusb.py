@@ -17,7 +17,7 @@ class Interface:
 
     def connect(self):
         if self.serial is None:
-            self.serial = serial.Serial(port=self.port, baudrate=9600, timeout=3)
+            self.serial = serial.Serial(port=self.port, baudrate=9600, timeout=3, write_timeout=0)
 
     def read(self):
         self.send("f0")
