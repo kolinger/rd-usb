@@ -67,6 +67,9 @@ ntdrt.application = {
                 if (chart) {
                     chart.destroy();
                 }
+
+                graph.parent().find('.loading').show();
+
                 var name = $('select[name="name"]').val();
 
                 left_axis = $('select[name="left_axis"]').val();
@@ -192,6 +195,8 @@ ntdrt.application = {
                             }
                         }
                     });
+
+                    graph.parent().find('.loading').hide();
                 });
             };
 
