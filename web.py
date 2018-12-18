@@ -41,4 +41,4 @@ console.setFormatter(formatter)
 logger.addHandler(console)
 
 if __name__ == "__main__":
-    app.run(port=port, threaded=True)
+    app.run(host="0.0.0.0", port=port, threaded=True)
