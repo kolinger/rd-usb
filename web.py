@@ -2,6 +2,10 @@ import logging
 from logging import StreamHandler
 import secrets
 import sys
+import threading
+import time
+from urllib import request
+import webbrowser
 
 from flask import Flask
 import socketio
@@ -41,4 +45,22 @@ console.setFormatter(formatter)
 logger.addHandler(console)
 
 if __name__ == "__main__":
+    if not app.debug:
+        def open_in_browser():
+            logging.info("Server is starting...")
+            url = "http://127.0.0.1:" + str(port)
+
+            while True:
+                try:
+                    request.urlopen(url=url)
+                    break
+                except Exception:
+                    time.sleep(0.5)
+
+            logging.info("Server is running!")
+            webbrowser.open(url)
+
+
+        threading.Timer(1, open_in_browser).start()
+
     app.run(host="0.0.0.0", port=port, threaded=True)
