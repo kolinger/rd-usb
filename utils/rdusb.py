@@ -8,11 +8,13 @@ import serial
 class Interface:
     serial = None
     modes = {
+        0: "Unknown",
         1: "QC2.0",
         3: "APP2.4A",
         4: "APP2.1A",
         5: "APP1.0A",
         7: "DCP1.5A",
+        8: "SAMSUNG",
         65535: "Unknown"
     }
 
