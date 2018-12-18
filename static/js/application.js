@@ -1,6 +1,7 @@
 var ntdrt = ntdrt || {};
 
 ntdrt.application = {
+
     init: function () {
         var self = ntdrt.application;
 
@@ -8,7 +9,36 @@ ntdrt.application = {
             return confirm($(this).attr('data-confirm'));
         });
 
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        $(document).on('click', '.toggle-navigation', function (e) {
+            e.preventDefault();
+            var target = $('.navbar > .container > .nav');
+            if (target.is(':visible')) {
+                target.slideUp(250);
+            } else {
+                target.slideDown(250);
+            }
+        });
+
+        $(document).on('click', '.toggle-form', function (e) {
+            e.preventDefault();
+            var target = $('.navbar > .container > .navbar-form');
+            if (target.is(':visible')) {
+                target.slideUp(250);
+            } else {
+                target.slideDown(250);
+            }
+        });
+
+        self.connection();
+        self.log();
+        self.current();
+        self.graph();
+    },
+
+    socket: null,
+    connection: function () {
+        var self = this;
+        var socket = this.socket = io.connect('http://' + document.domain + ':' + location.port);
 
         socket.on('connecting', function () {
             $('#status').text('Connecting');
@@ -46,9 +76,12 @@ ntdrt.application = {
             }
             return false;
         });
+    },
 
+    log: function () {
+        var self = this;
         if ($('#log').length) {
-            socket.on('log', function (message) {
+            this.socket.on('log', function (message) {
                 $('#log').append(message);
                 self.logScroll(500);
             });
@@ -57,10 +90,45 @@ ntdrt.application = {
             self.logResize();
             self.logScroll(0);
         }
+    },
 
+    chart: null,
+    left_axis: null,
+    right_axis: null,
+    current: function () {
+        var current = $('#current');
+        if (current.length) {
+            this.socket.on('update', function (message) {
+                var data = JSON.parse(message);
+                var counter = 0;
+                current.find('td').each(function () {
+                    $(this).text(data['table'][counter]);
+                    counter++;
+                });
+
+                if (this.chart && this.left_axis && this.right_axis) {
+                    if (data['graph'].hasOwnProperty(this.left_axis) && data['graph'].hasOwnProperty(this.right_axis)) {
+                        this.chart.data.datasets[0].data.push({
+                            t: data['graph']['timestamp'],
+                            y: data['graph'][this.left_axis],
+                        });
+                        this.chart.data.datasets[1].data.push({
+                            t: data['graph']['timestamp'],
+                            y: data['graph'][this.right_axis],
+                        });
+                        try {
+                            this.chart.update();
+                        } catch (e) {
+                            // ignore
+                        }
+                    }
+                }
+            });
+        }
+    },
+
+    graph: function () {
         var chart = null;
-        var left_axis;
-        var right_axis;
         var graph = $('#graph');
         if (graph.length) {
             var create = function () {
@@ -72,9 +140,9 @@ ntdrt.application = {
 
                 var name = $('select[name="name"]').val();
 
-                left_axis = $('select[name="left_axis"]').val();
+                var left_axis = this.left_axis = $('select[name="left_axis"]').val();
                 var left_name = $('#graph-settings option[value="' + left_axis + '"]').first().text();
-                right_axis = $('select[name="right_axis"]').val();
+                var right_axis = this.right_axis = $('select[name="right_axis"]').val();
                 var right_name = $('#graph-settings option[value="' + right_axis + '"]').first().text();
 
                 var unit = function (name) {
@@ -93,7 +161,7 @@ ntdrt.application = {
                 url += '&right_axis=' + right_axis;
 
                 $.get(url, function (data) {
-                    chart = new Chart(graph[0], {
+                    chart = this.chart = new Chart(graph[0], {
                         type: 'line',
                         data: {
                             datasets: [{
@@ -205,36 +273,6 @@ ntdrt.application = {
             $(document).on('submit', '#graph-settings', function (e) {
                 create();
                 return false;
-            });
-        }
-
-        var current = $('#current');
-        if (current.length) {
-            socket.on('update', function (message) {
-                var data = JSON.parse(message);
-                var counter = 0;
-                current.find('td').each(function () {
-                    $(this).text(data['table'][counter]);
-                    counter++;
-                });
-
-                if (chart && left_axis && right_axis) {
-                    if (data['graph'].hasOwnProperty(left_axis) && data['graph'].hasOwnProperty(right_axis)) {
-                        chart.data.datasets[0].data.push({
-                            t: data['graph']['timestamp'],
-                            y: data['graph'][left_axis],
-                        });
-                        chart.data.datasets[1].data.push({
-                            t: data['graph']['timestamp'],
-                            y: data['graph'][right_axis],
-                        });
-                        try {
-                            chart.update();
-                        } catch (e) {
-                            // ignore
-                        }
-                    }
-                }
             });
         }
     },

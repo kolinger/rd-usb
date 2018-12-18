@@ -5,8 +5,25 @@
     border-color: #ccc;
 }
 
+.navbar .top {
+    float: left;
+}
+
+.navbar .top .right {
+    display: none;
+    float: right;
+}
+
 .navbar .form-group {
     margin: 0 10px 0 0;
+}
+
+.navbar .form-group input {
+    width: 150px;
+}
+
+.navbar .form-group input[name="port"] {
+    width: 90px;
 }
 
 .content {
@@ -36,4 +53,48 @@
 
 .form-inline .form-group label {
     margin: 0 10px 0 0;
+}
+
+@media (max-width: 991px) {
+    .navbar .top {
+        float: none;
+    }
+
+    .navbar .top .navbar-header {
+        float: left !important;
+    }
+
+    .navbar .top .right {
+        display: block;
+    }
+
+    .navbar .top .right .nav li {
+        float: left !important;
+    }
+
+    .navbar > .container > .nav,
+    .navbar > .container > .navbar-form {
+        float: none !important;
+        display: none;
+        padding-left: 0 !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .container {
+        padding: 0 15px;
+    }
+
+    .navbar > .container > .navbar-form {
+        padding: 0 15px !important;
+        border: none;
+    }
+
+    .navbar .form-group input {
+        width: 100% !important;
+    }
+
+    .navbar .form-group {
+        margin: 0 0 10px 0;
+    }
 }
