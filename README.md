@@ -1,17 +1,17 @@
-Web GUI for RuiDeng USB testers
+Web GUI for RuiDeng USB testers (UM34C, UM24C, UM25C) 
 ==
 
 Simple web GUI written in Python 3. Measurements are stored in sqlite database. Tables and graphs are supported. 
 Live preview and graphing is also available.
 
-Tested only on UM34C.
+Tested on UM34C/UM24C/UM25C.
 
 Based on https://github.com/sebastianha/um34c
 
 
 Requirements
 --
-- Python 3
+- **Python >3.6**
 - USB meter needs to be connected as serial port
     - Pairing with Windows Settings works fine. After successful installation some serial ports are 
     installed in Device Manager. In my case two. One of them works.
