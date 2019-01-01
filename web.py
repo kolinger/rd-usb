@@ -1,7 +1,13 @@
 import logging
 from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
-import secrets
+try:
+    from secrets import token_hex
+except ImportError:
+    from os import urandom
+
+    def token_hex(nbytes=None):
+        return urandom(nbytes).hex()
 import sys
 import threading
 import time
@@ -45,7 +51,7 @@ try:
     config = Config()
     secret_key = config.read("secret_key")
     if not secret_key:
-        secret_key = secrets.token_hex(16)
+        secret_key = token_hex(16)
         config.write("secret_key", secret_key)
     app.secret_key = secret_key
 
