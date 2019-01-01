@@ -38,7 +38,7 @@ ntdrt.application = {
     socket: null,
     connection: function () {
         var self = this;
-        var socket = this.socket = io.connect('http://' + document.domain + ':' + location.port);
+        var socket = self.socket = io.connect('http://' + document.domain + ':' + location.port);
 
         socket.on('connecting', function () {
             $('#status').text('Connecting');
@@ -81,7 +81,7 @@ ntdrt.application = {
     log: function () {
         var self = this;
         if ($('#log').length) {
-            this.socket.on('log', function (message) {
+            self.socket.on('log', function (message) {
                 $('#log').append(message);
                 self.logScroll(500);
             });
@@ -96,9 +96,10 @@ ntdrt.application = {
     left_axis: null,
     right_axis: null,
     current: function () {
+        var self = this;
         var current = $('#current');
         if (current.length) {
-            this.socket.on('update', function (message) {
+            self.socket.on('update', function (message) {
                 var data = JSON.parse(message);
                 var counter = 0;
                 current.find('td').each(function () {
@@ -106,18 +107,18 @@ ntdrt.application = {
                     counter++;
                 });
 
-                if (this.chart && this.left_axis && this.right_axis) {
-                    if (data['graph'].hasOwnProperty(this.left_axis) && data['graph'].hasOwnProperty(this.right_axis)) {
-                        this.chart.data.datasets[0].data.push({
+                if (self.chart && self.left_axis && self.right_axis) {
+                    if (data['graph'].hasOwnProperty(self.left_axis) && data['graph'].hasOwnProperty(self.right_axis)) {
+                        self.chart.data.datasets[0].data.push({
                             t: data['graph']['timestamp'],
-                            y: data['graph'][this.left_axis],
+                            y: data['graph'][self.left_axis],
                         });
-                        this.chart.data.datasets[1].data.push({
+                        self.chart.data.datasets[1].data.push({
                             t: data['graph']['timestamp'],
-                            y: data['graph'][this.right_axis],
+                            y: data['graph'][self.right_axis],
                         });
                         try {
-                            this.chart.update();
+                            self.chart.update();
                         } catch (e) {
                             // ignore
                         }
@@ -128,6 +129,7 @@ ntdrt.application = {
     },
 
     graph: function () {
+        var self = this;
         var chart = null;
         var graph = $('#graph');
         if (graph.length) {
@@ -140,9 +142,9 @@ ntdrt.application = {
 
                 var name = $('select[name="name"]').val();
 
-                var left_axis = this.left_axis = $('select[name="left_axis"]').val();
+                var left_axis = self.left_axis = $('select[name="left_axis"]').val();
                 var left_name = $('#graph-settings option[value="' + left_axis + '"]').first().text();
-                var right_axis = this.right_axis = $('select[name="right_axis"]').val();
+                var right_axis = self.right_axis = $('select[name="right_axis"]').val();
                 var right_name = $('#graph-settings option[value="' + right_axis + '"]').first().text();
 
                 var unit = function (name) {
@@ -161,7 +163,7 @@ ntdrt.application = {
                 url += '&right_axis=' + right_axis;
 
                 $.get(url, function (data) {
-                    chart = this.chart = new Chart(graph[0], {
+                    chart = self.chart = new Chart(graph[0], {
                         type: 'line',
                         data: {
                             datasets: [{
