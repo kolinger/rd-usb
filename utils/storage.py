@@ -46,8 +46,6 @@ class Storage:
                     "message TEXT"
                     ")"
                 ))
-            else:
-                cursor.execute("DELETE FROM logs WHERE id NOT IN (SELECT id FROM logs ORDER BY id DESC LIMIT 1000)")
 
             if "measurements" not in tables:
                 cursor.execute((
@@ -144,6 +142,11 @@ class Storage:
                 log += row["message"]
 
         return log
+
+    def clean_log(self):
+        with sqlite3.connect(**self.parameters) as sqlite:
+            cursor = sqlite.cursor()
+            cursor.execute("DELETE FROM logs WHERE id NOT IN (SELECT id FROM logs ORDER BY id DESC LIMIT 1000)")
 
     def update_status(self, status):
         with sqlite3.connect(**self.parameters) as sqlite:

@@ -50,6 +50,7 @@ class Index:
 
     def render_default(self):
         self.init()
+        self.storage.clean_log()
         log = self.storage.fetch_log()
         return render_template("default.html", log=log, page="default")
 
