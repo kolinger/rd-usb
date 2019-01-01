@@ -11,7 +11,7 @@ Based on https://github.com/sebastianha/um34c
 
 Requirements
 --
-- **Python >3.6**
+- **Python 3.6 or newer**
 - USB meter needs to be connected as serial port
     - Pairing with Windows Settings works fine. After successful installation some serial ports are 
     installed in Device Manager. In my case two. One of them works.
