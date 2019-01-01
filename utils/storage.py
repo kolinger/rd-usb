@@ -1,6 +1,6 @@
 import sqlite3
 
-from utils.config import project_root
+from utils.config import data_path
 
 
 class Storage:
@@ -8,7 +8,7 @@ class Storage:
 
     def __init__(self):
         self.parameters = {
-            "database": project_root + "/data.db",
+            "database": data_path + "/data.db",
             "isolation_level": None,
         }
 

@@ -7,7 +7,7 @@ from flask import url_for, request, jsonify, redirect, flash, make_response
 from flask.blueprints import Blueprint
 from flask.templating import render_template
 
-from utils.config import project_root, Config
+from utils.config import Config, static_path
 from utils.formatting import Format
 from utils.storage import Storage
 
@@ -164,6 +164,6 @@ class Index:
         if endpoint == "static":
             filename = values.get("filename", None)
             if filename:
-                file_path = os.path.join(project_root, endpoint, filename)
+                file_path = static_path + "/" + filename
                 values["v"] = int(os.stat(file_path).st_mtime)
         return url_for(endpoint, **values)

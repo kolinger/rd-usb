@@ -1,9 +1,18 @@
 import json
 from json import JSONDecodeError
 import os
+import sys
 
-project_root = os.path.realpath(os.path.dirname(__file__) + "/..")
-config_file = project_root + "/config.json"
+from appdirs import user_data_dir
+
+data_path = user_data_dir("rd-usb", False)
+os.makedirs(data_path, exist_ok=True)
+config_file = data_path + "/config.json"
+
+if getattr(sys, "frozen", False):
+    static_path = sys._MEIPASS + "/static"
+else:
+    static_path = os.path.realpath(os.path.dirname(__file__) + "/../static")
 
 
 class Config:

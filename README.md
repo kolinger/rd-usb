@@ -11,7 +11,6 @@ Based on https://github.com/sebastianha/um34c
 
 Requirements
 --
-- **Python 3.6 or newer**
 - USB meter needs to be connected as serial port
     - Pairing with Windows Settings works fine. After successful installation some serial ports are 
     installed in Device Manager. In my case two. One of them works.
@@ -20,9 +19,20 @@ Requirements
 
 Installation
 --
-- Download from github or `git clone https://github.com/kolinger/rd-usb.git`
-- Install requirements `pip install -r requirements.txt`
-- Run with `python web.py` - this will spawn web server on http://127.0.0.1:5000, port can be changed 
+
+### Binaries (Win x64 only)
+1. Download from [releases](https://github.com/kolinger/rd-usb/releases)
+2. Extract archive
+2. Run executable and web server will be shortly spawned on address http://127.0.0.1:5000
+3. Application will be probably blocked by Microsoft SmartScreen. For unblock click `More info` 
+and `Run anyway`. I don't have certificate for signing and application does not have any 
+reputation so Microsoft will block by default.
+
+### Source code
+1. Python 3.6 or newer is required
+2. Download from github or `git clone https://github.com/kolinger/rd-usb.git`
+3. Install requirements `pip install -r requirements.txt`
+4. Run with `python web.py` - this will spawn web server on http://127.0.0.1:5000, port can be changed 
 with first argument: `python web.py 5555`
 
 On Windows `python` can be found in Python's installation folder. 
@@ -31,7 +41,8 @@ and `pip` with `C:\Python37\python.exe -m pip install -r requirements.txt`.
 
 On Linux use `python3` and `pip3`.
 
-Setup
+
+Usage
 --
 
 1. Find your serial port (in Device Manager) and fill serial port input.
@@ -46,12 +57,24 @@ Otherwise read log for error messages.
 
 ![setup](screenshots/setup.png)
 
+
 Graphs
 --
 
 ![tables](screenshots/graphs.png)
 
+
 Tables
 --
 
 ![tables](screenshots/tables.png)
+
+
+Development
+--
+
+### Building binaries
+
+1. Install pyinstaller: `pip install pyinstaller`
+2. Generate binary with provided spec file: `pyinstaller pyinstaller.spec`
+3. Binaries will be saved in `dist` directory
