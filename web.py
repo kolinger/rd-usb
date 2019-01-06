@@ -9,7 +9,6 @@ import time
 from urllib import request
 import webbrowser
 
-from engineio import async_threading
 from flask import Flask
 import socketio
 
@@ -17,8 +16,6 @@ from utils.config import Config, static_path, data_path
 from utils.storage import Storage
 from webapp.backend import Backend
 from webapp.index import Index
-
-this_is_just_for_pyinstaller = async_threading._async
 
 port = 5000
 if len(sys.argv) > 1:

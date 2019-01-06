@@ -1,6 +1,6 @@
 Flask==1.0.2
 Arrow==0.10.0
 pyserial==3.4
-python-socketio==2.0.0
-python-engineio==3.1.0
+python-socketio==3.1.0
+python-engineio==3.2.0
 appdirs==1.4.3
