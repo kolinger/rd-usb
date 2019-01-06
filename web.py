@@ -1,7 +1,8 @@
 import logging
 from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
-import secrets
+import random
+import string
 import sys
 import threading
 import time
@@ -45,13 +46,13 @@ try:
     config = Config()
     secret_key = config.read("secret_key")
     if not secret_key:
-        secret_key = secrets.token_hex(16)
+        secret_key = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
         config.write("secret_key", secret_key)
     app.secret_key = secret_key
 
     Storage().init()
 
-    sockets = socketio.Server(async_mode="threading")
+    sockets = socketio.Server()
     app.wsgi_app = socketio.Middleware(sockets, app.wsgi_app)
     sockets.register_namespace(Backend())
 

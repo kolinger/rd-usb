@@ -1,5 +1,4 @@
 import json
-from json import JSONDecodeError
 import os
 import sys
 
@@ -23,7 +22,7 @@ class Config:
             with open(config_file, "r") as file:
                 try:
                     self.data = json.load(file)
-                except JSONDecodeError:
+                except ValueError:
                     pass
 
     def read(self, name, fallback=None):
