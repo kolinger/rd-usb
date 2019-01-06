@@ -36,6 +36,7 @@ class Index:
         variables = {
             "format": Format(),
             "url_for": self.url_for,
+            "version": self.config.read("version", "UM34C"),
             "port": self.config.read("port", ""),
             "rate": str(self.config.read("rate", 1.0)),
             "name": self.config.read("name", arrow.now().format("YYYY-MM-DD")),

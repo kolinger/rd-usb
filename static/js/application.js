@@ -67,6 +67,7 @@ ntdrt.application = {
                 socket.emit('close');
             } else {
                 var data = {
+                    version: form.find('[name="version"]').val(),
                     port: input.val(),
                     rate: form.find('[name="rate"]').val(),
                     name: form.find('[name="name"]').val()

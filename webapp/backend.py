@@ -8,9 +8,9 @@ import traceback
 import arrow
 from socketio import Namespace
 
-from utils.rdusb import Interface
 from utils.config import Config
 from utils.formatting import Format
+from utils.rdusb import Interface
 from utils.storage import Storage
 
 
@@ -28,6 +28,7 @@ class Backend(Namespace):
         self.init()
 
         data = json.loads(data)
+        self.config.write("version", data["version"])
         self.config.write("port", data["port"])
         self.config.write("name", data["name"])
         try:
@@ -74,6 +75,8 @@ class Daemon:
         self.storage = Storage()
         self.config = Config()
         interface = Interface(port=self.config.read("port"))
+        if self.config.read("version") == "UM25C":
+            interface.enable_higher_resolution()
 
         try:
             self.log("Connecting")

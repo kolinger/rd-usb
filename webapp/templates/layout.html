@@ -48,6 +48,13 @@
             <form class="navbar-form navbar-right" id="connect">
                 <div class="form-group" id="status">{{ status }}</div>
                 <div class="form-group">
+                    <select class="form-control" name="version" {% if connect_disabled %}disabled {% endif %}>
+                        <option value="UM34C"{% if version == "UM34C" %} selected{% endif %}>UM34C</option>
+                        <option value="UM25C"{% if version == "UM25C" %} selected{% endif %}>UM25C</option>
+                        <option value="UM24C"{% if version == "UM24C" %} selected{% endif %}>UM24C</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <input type="text" class="form-control" name="port" placeholder="Serial port"
                            value="{{ port }}" {% if connect_disabled %}disabled {% endif %}/>
                 </div>

@@ -27,12 +27,13 @@
 }
 
 .content {
-    padding: 0 0 30px 0;
+    padding: 0 0 10px 0;
 }
 
 .content .log {
-    white-space:pre-wrap;
-    word-wrap:break-word;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin-bottom: 0;
 }
 
 .content .data {
@@ -53,6 +54,12 @@
 
 .form-inline .form-group label {
     margin: 0 10px 0 0;
+}
+
+@media (max-width: 1199px) {
+    .navbar-header {
+        display: none;
+    }
 }
 
 @media (max-width: 991px) {
@@ -96,5 +103,12 @@
 
     .navbar .form-group {
         margin: 0 0 10px 0;
+    }
+}
+
+@media (min-width: 787px) {
+    .container {
+        padding-left: 0;
+        padding-right: 0;
     }
 }
