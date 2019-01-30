@@ -11,9 +11,11 @@ class Interface:
     modes = {
         0: "Unknown",
         1: "QC2.0",
+        2: "QC3.0",
         3: "APP2.4A",
         4: "APP2.1A",
         5: "APP1.0A",
+        6: "APP0.5A",
         7: "DCP1.5A",
         8: "SAMSUNG",
         65535: "Unknown"
