@@ -32,6 +32,7 @@ ntdrt.application = {
         self.connection();
         self.log();
         self.current();
+
         self.graph();
     },
 
@@ -108,21 +109,25 @@ ntdrt.application = {
                     counter++;
                 });
 
-                if (self.chart && self.left_axis && self.right_axis) {
-                    if (data['graph'].hasOwnProperty(self.left_axis) && data['graph'].hasOwnProperty(self.right_axis)) {
-                        self.chart.data.datasets[0].data.push({
-                            t: data['graph']['timestamp'],
-                            y: data['graph'][self.left_axis],
-                        });
-                        self.chart.data.datasets[1].data.push({
-                            t: data['graph']['timestamp'],
-                            y: data['graph'][self.right_axis],
-                        });
-                        try {
-                            self.chart.update();
-                        } catch (e) {
-                            // ignore
+                if (self.chart) {
+                    try {
+                        var item = {
+                            date: data['graph']['timestamp'],
+                        };
+                        var push = false;
+                        if (self.left_axis && data['graph'].hasOwnProperty(self.left_axis)) {
+                            item['left'] = data['graph'][self.left_axis];
+                            push = true;
                         }
+                        if (self.right_axis && data['graph'].hasOwnProperty(self.right_axis)) {
+                            item['right'] = data['graph'][self.right_axis];
+                            push = true;
+                        }
+                        if (push) {
+                            self.chart.addData([item]);
+                        }
+                    } catch (e) {
+                        // ignore
                     }
                 }
             });
@@ -136,7 +141,7 @@ ntdrt.application = {
         if (graph.length) {
             var create = function () {
                 if (chart) {
-                    chart.destroy();
+                    chart.dispose();
                 }
 
                 graph.parent().find('.loading').show();
@@ -164,110 +169,102 @@ ntdrt.application = {
                 url += '&right_axis=' + right_axis;
 
                 $.get(url, function (data) {
-                    chart = self.chart = new Chart(graph[0], {
-                        type: 'line',
-                        data: {
-                            datasets: [{
-                                label: left_name,
-                                data: data['left']['data'],
-                                yAxisID: 'left',
-                                borderColor: [
-                                    'rgba(229, 0, 0, 1)',
-                                ],
-                                borderWidth: 2,
-                                backgroundColor: [
-                                    'rgba(229, 0, 0, 0.5)',
-                                ],
-                                fill: false,
-                            }, {
-                                label: right_name,
-                                data: data['right']['data'],
-                                yAxisID: 'right',
-                                borderColor: [
-                                    'rgba(0, 128, 255, 1)',
-                                ],
-                                borderWidth: 2,
-                                backgroundColor: [
-                                    'rgba(0, 128, 255, 0.5)',
-                                ],
-                                fill: false
-                            }]
-                        },
-                        options: {
-                            elements: {
-                                point: {
-                                    radius: 0
-                                }
-                            },
-                            tooltips: {
-                                mode: 'index',
-                                intersect: false,
-                                callbacks: {
-                                    labelColor: function (tooltipItem, chart) {
-                                        var data = chart.config.data.datasets[tooltipItem.datasetIndex];
-                                        return {
-                                            backgroundColor: data['borderColor'][0]
-                                        }
-                                    },
-                                }
-                            },
-                            hover: {
-                                mode: 'index',
-                                intersect: false
-                            },
-                            scales: {
-                                xAxes: [{
-                                    type: 'time',
-                                    time: {
-                                        displayFormats: {
-                                            millisecond: 'HH:mm:ss',
-                                            second: 'HH:mm:ss',
-                                            minute: 'HH:mm',
-                                            hour: 'HH:mm',
-                                            day: 'YYYY-MM-DD HH:mm',
-                                            week: 'YYYY-MM-DD',
-                                            month: 'YYYY-MM-DD',
-                                            quarter: 'YYYY-MM-DD',
-                                            year: 'YYYY-MM-DD',
-                                        },
-                                        tooltipFormat: 'YYYY-MM-DD HH:mm:ss'
-                                    }
-                                }],
-                                yAxes: [
-                                    {
-                                        id: 'left',
-                                        type: 'linear',
-                                        position: 'left',
-                                        ticks: {
-                                            min: 0,
-                                            callback: function (value, index, values) {
-                                                if (!left_unit) {
-                                                    return value;
-                                                }
-                                                return value + ' ' + left_unit;
-                                            }
-                                        }
-                                    },
-                                    {
-                                        id: 'right',
-                                        type: 'linear',
-                                        position: 'right',
-                                        ticks: {
-                                            min: 0,
-                                            callback: function (value, index, values) {
-                                                if (!right_unit) {
-                                                    return value;
-                                                }
-                                                return value + ' ' + right_unit;
-                                            }
-                                        }
-                                    }
-                                ]
+                    self.chart = chart = am4core.createFromConfig({
+                        'data': data,
+                        'xAxes': [{
+                            'type': 'DateAxis',
+                            'title': {
+                                'text': 'Time',
                             }
-                        }
-                    });
+                        }],
+                        'yAxes': [
+                            {
+                                'id': 'leftAxis',
+                                'type': 'ValueAxis',
+                                'title': {
+                                    'fill': 'rgb(229, 0, 0)',
+                                    'text': left_name,
+                                },
+                                'numberFormatter': {
+                                    'type': 'NumberFormatter',
+                                    'numberFormat': '#.00 \' ' + left_unit + '\''
+                                },
+                                'tooltip': {
+                                    'disabled': true
+                                },
+                                'min': 0
+                            },
+                            {
+                                'id': 'rightAxis',
+                                'type': 'ValueAxis',
+                                'title': {
+                                    'fill': 'rgb(0, 128, 255)',
+                                    'text': right_name,
+                                },
+                                'numberFormatter': {
+                                    'type': 'NumberFormatter',
+                                    'numberFormat': '#.00 \' ' + right_unit + '\''
+                                },
+                                'tooltip': {
+                                    'disabled': true
+                                },
+                                'renderer': {
+                                    'opposite': true
+                                },
+                                'min': 0
+                            }
+                        ],
+                        'series': [
+                            {
+                                'id': 'left',
+                                'type': 'LineSeries',
+                                'stroke': 'rgb(229, 0, 0)',
+                                'strokeWidth': 2,
+                                'dataFields': {
+                                    'dateX': 'date',
+                                    'valueY': 'left'
+                                },
+                                'tooltipText': '{left} ' + left_unit,
+                                'tooltip': {
+                                    'getFillFromObject': false,
+                                    'background': {
+                                        'fill': 'rgb(229, 0, 0)',
+                                    },
+                                    'label': {
+                                        'fill': '#fff'
+                                    }
+                                }
+                            },
+                            {
+                                'id': 'right',
+                                'type': 'LineSeries',
+                                'stroke': 'rgb(0, 128, 255)',
+                                'strokeWidth': 2,
+                                'dataFields': {
+                                    'dateX': 'date',
+                                    'valueY': 'right'
+                                },
+                                'yAxis': 'rightAxis',
+                                'tooltipText': '{right} ' + right_unit,
+                                'tooltip': {
+                                    'getFillFromObject': false,
+                                    'background': {
+                                        'fill': 'rgb(0, 128, 255)',
+                                    },
+                                    'label': {
+                                        'fill': '#fff'
+                                    }
+                                }
+                            }
+                        ],
+                        'cursor': {
+                            'type': 'XYCursor'
+                        },
+                    }, graph[0], 'XYChart');
 
-                    graph.parent().find('.loading').hide();
+                    chart.events.on('ready', function () {
+                        graph.parent().find('.loading').hide();
+                    });
                 });
             };
 

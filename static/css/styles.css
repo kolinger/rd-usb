@@ -56,6 +56,10 @@
     margin: 0 10px 0 0;
 }
 
+#graph {
+    height: 700px;
+}
+
 @media (max-width: 1199px) {
     .navbar-header {
         display: none;

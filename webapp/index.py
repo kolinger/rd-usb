@@ -128,27 +128,15 @@ class Index:
         left_axis = request.args.get("left_axis")
         right_axis = request.args.get("right_axis")
 
-        data = {
-            "labels": [],
-            "left": {
-                "data": [],
-            },
-            "right": {
-                "data": [],
-            },
-        }
-
         format = Format()
+
+        data = []
         for item in self.storage.fetch_measurements(name):
             if left_axis in item:
-                data["left"]["data"].append({
-                    "t": format.timestamp(item),
-                    "y": item[left_axis],
-                })
-            if right_axis in item:
-                data["right"]["data"].append({
-                    "t": format.timestamp(item),
-                    "y": item[right_axis],
+                data.append({
+                    "date": format.timestamp(item),
+                    "left": item[left_axis],
+                    "right": item[right_axis],
                 })
 
         return jsonify(data)
