@@ -30,7 +30,15 @@ class Backend(Namespace):
         data = json.loads(data)
         self.config.write("version", data["version"])
         self.config.write("port", data["port"])
+
+        storage = Storage()
+        last = storage.fetch_last_measurement_by_name(data["name"])
+        if last:
+            now = arrow.now()
+            if now.timestamp - int(last["timestamp"]) > 3600:
+                data["name"] += " " + arrow.now().format("YYYY-MM-DD HH:mm")
         self.config.write("name", data["name"])
+
         try:
             self.config.write("rate", float(data["rate"]))
         except ValueError:

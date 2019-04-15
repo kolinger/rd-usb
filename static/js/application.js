@@ -41,13 +41,16 @@ ntdrt.application = {
         var self = this;
         var socket = self.socket = io.connect('http://' + document.domain + ':' + location.port);
 
+        var newConnection = false;
         socket.on('connecting', function () {
+            newConnection = false;
             $('#status').text('Connecting');
             self.disable(true);
             $('#connect button').text('Disconnect');
         });
 
         socket.on('connected', function () {
+            newConnection = true;
             $('#status').text('Connected');
         });
 
@@ -59,6 +62,12 @@ ntdrt.application = {
             $('#status').text('Disconnected');
             self.disable(false);
             $('#connect button').text('Connect');
+        });
+
+        socket.on('update', function () {
+            if (newConnection) {
+                window.location.href = "/graph?name=current";
+            }
         });
 
         $(document).on('submit', '#connect', function (e) {

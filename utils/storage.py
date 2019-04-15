@@ -113,6 +113,12 @@ class Storage:
             cursor.execute("SELECT * FROM measurements WHERE name = ? ORDER BY timestamp ASC", (name,))
             return cursor.fetchall()
 
+    def fetch_last_measurement_by_name(self, name):
+        with self.connect() as sqlite:
+            cursor = sqlite.cursor()
+            cursor.execute("SELECT * FROM measurements WHERE name = ? ORDER BY timestamp DESC LIMIT 1", (name,))
+            return cursor.fetchone()
+
     def fetch_last_measurement(self):
         with self.connect() as sqlite:
             cursor = sqlite.cursor()
