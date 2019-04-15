@@ -61,7 +61,7 @@ Otherwise read log for error messages.
 Graphs
 --
 
-![tables](screenshots/graphs.png?v2)
+![tables](screenshots/graphs-v2.png)
 
 
 Tables
