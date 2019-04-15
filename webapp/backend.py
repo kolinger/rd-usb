@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import sys
 from threading import Thread
 import time
@@ -36,6 +37,9 @@ class Backend(Namespace):
         if last:
             now = arrow.now()
             if now.timestamp - int(last["timestamp"]) > 3600:
+                match = re.match(".+( [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2})$", data["name"])
+                if match:
+                    data["name"] = data["name"][:-len(match.group(1))]
                 data["name"] += " " + arrow.now().format("YYYY-MM-DD HH:mm")
         self.config.write("name", data["name"])
 
