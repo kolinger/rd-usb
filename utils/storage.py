@@ -96,7 +96,7 @@ class Storage:
     def fetch_measurement_names(self):
         with self.connect() as sqlite:
             cursor = sqlite.cursor()
-            cursor.execute("SELECT name FROM measurements GROUP BY name ORDER BY name ASC")
+            cursor.execute("SELECT name FROM measurements GROUP BY name ORDER BY timestamp DESC")
 
             names = []
             for row in cursor.fetchall():
