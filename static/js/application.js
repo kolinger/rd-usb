@@ -29,6 +29,17 @@ ntdrt.application = {
             }
         });
 
+        $(document).on('change', '.setup select[name="version"]', function (e) {
+            var control = $(this);
+            if (control.val().indexOf('TC') === 0) {
+                $('.setup [data-serial]').hide();
+                $('.setup [data-ble]').show();
+            } else {
+                $('.setup [data-serial]').show();
+                $('.setup [data-ble]').hide();
+            }
+        });
+
         self.connection();
         self.log();
         self.current();
@@ -70,6 +81,10 @@ ntdrt.application = {
             }
         });
 
+        socket.on('log-error', function () {
+            window.location.href = "/";
+        });
+
         $(document).on('submit', '#connect', function (e) {
             var form = $(e.target);
             var input = form.find('[name="port"]');
@@ -86,6 +101,29 @@ ntdrt.application = {
                 socket.emit('open', data);
             }
             return false;
+        });
+
+        $(document).on('click', '.ble .scan button', function (e) {
+            socket.emit('scan');
+            $('.ble .scan-result').text('Scanning...');
+        });
+
+        socket.on('scan-result', function (result) {
+            $('.ble .scan-result').html("<pre>" + result + "</pre>");
+        });
+
+        $(document).on('click', '.ble .scan-result [data-address]', function (e) {
+            e.preventDefault();
+            $('.ble .scan-result').empty();
+            var form = $('#connect');
+            var data = {
+                version: form.find('[name="version"]').val(),
+                ble_address: $(this).attr('data-address'),
+                rate: form.find('[name="rate"]').val(),
+                name: form.find('[name="name"]').val()
+            };
+            data = JSON.stringify(data);
+            socket.emit('open', data);
         });
     },
 

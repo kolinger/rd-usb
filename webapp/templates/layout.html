@@ -45,18 +45,28 @@
                     <a href="{{ url_for('index.graph') }}">Graph</a>
                 </li>
             </ul>
-            <form class="navbar-form navbar-right" id="connect">
+            <form class="navbar-form navbar-right setup" id="connect">
                 <div class="form-group" id="status">{{ status }}</div>
                 <div class="form-group">
                     <select class="form-control" name="version" {% if connect_disabled %}disabled {% endif %}>
                         <option value="UM34C"{% if version == "UM34C" %} selected{% endif %}>UM34C</option>
                         <option value="UM25C"{% if version == "UM25C" %} selected{% endif %}>UM25C</option>
                         <option value="UM24C"{% if version == "UM24C" %} selected{% endif %}>UM24C</option>
+                        <option value="TC66C"{% if version == "TC66C" %} selected{% endif %}>TC66C</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-serial{% if version.startswith("TC") %} style="display:none"{% endif %}>
                     <input type="text" class="form-control" name="port" placeholder="Serial port"
                            value="{{ port }}" {% if connect_disabled %}disabled {% endif %}/>
+                </div>
+                <div class="form-group" data-ble{% if not version.startswith("TC") %} style="display:none"{% endif %}>
+                    <a href="{{ url_for("index.ble") }}">
+                        {% if ble_address %}
+                            {{ ble_address }}
+                        {% else %}
+                            Setup
+                        {% endif %}
+                    </a>
                 </div>
                 <div class="form-group">Name</div>
                 <div class="form-group">

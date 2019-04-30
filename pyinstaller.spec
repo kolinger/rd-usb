@@ -1,9 +1,11 @@
 # -*- mode: python -*-
 
+from PyInstaller.utils.hooks import collect_dynamic_libs
+
 block_cipher = None
 
 a = Analysis(['web.py'],
-             binaries=[],
+             binaries=collect_dynamic_libs('bleak'),
              datas=[
                 ('webapp/templates', 'webapp/templates'),
                 ('static', 'static'),

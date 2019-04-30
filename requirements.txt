@@ -4,3 +4,6 @@ pyserial==3.4
 python-socketio==3.1.0
 python-engineio==3.2.0
 appdirs==1.4.3
+
+bleak==0.4.0
+pycryptodome==3.8.1

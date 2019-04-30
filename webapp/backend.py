@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import re
@@ -9,6 +10,7 @@ import traceback
 import arrow
 from socketio import Namespace
 
+from utils.ble import Ble
 from utils.config import Config
 from utils.formatting import Format
 from utils.rdusb import Interface
@@ -20,6 +22,7 @@ class Backend(Namespace):
 
     def __init__(self):
         super().__init__()
+        self.ble = Ble(self)
         self.daemon = Daemon(self)
 
     def init(self):
@@ -30,7 +33,14 @@ class Backend(Namespace):
 
         data = json.loads(data)
         self.config.write("version", data["version"])
-        self.config.write("port", data["port"])
+
+        if "port" in data:
+            self.config.write("port", data["port"])
+
+        if "ble_address" in data:
+            self.config.write("ble_address", data["ble_address"])
+        else:
+            data["ble_address"] = self.config.read("ble_address")
 
         storage = Storage()
         last = storage.fetch_last_measurement_by_name(data["name"])
@@ -48,8 +58,30 @@ class Backend(Namespace):
         except ValueError:
             pass
 
+        if data["version"].startswith("TC") and ("ble_address" not in data or not data["ble_address"]):
+            self.daemon.log("BLE address is missing. Select address in Setup")
+            return
+
         self.emit("connecting")
         self.daemon.start()
+
+    def on_scan(self, sid):
+        self.init()
+        try:
+            data = self.ble.scan()
+            result = ["Results:"]
+            if len(data) == 0:
+                result.append("no device found, try again")
+            for device in data:
+                name = device["address"] + " (" + device["name"] + ")"
+                result.append("<a href=\"#\" data-address=\"" + device["address"] + "\">" + name + "</a>")
+            self.emit("scan-result", "\n".join(result))
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            logging.exception(sys.exc_info()[0])
+            self.emit("scan-result", traceback.format_exc())
 
     def on_close(self, sid):
         self.init()
@@ -62,12 +94,14 @@ class Daemon:
     thread = None
     storage = None
     config = None
+    interface = None
 
     def __init__(self, backend):
         self.backed = backend
         self.storage = Storage()
         if self.storage.fetch_status() != "disconnected":
             self.storage.update_status("disconnected")
+        self.loop = asyncio.new_event_loop()
 
     def start(self):
         self.running = True
@@ -79,6 +113,7 @@ class Daemon:
     def stop(self):
         self.log("Disconnecting")
         self.running = False
+        self.interface.close()
         while self.thread and self.thread.is_alive():
             time.sleep(0.1)
         self.emit("disconnected")
@@ -86,18 +121,32 @@ class Daemon:
     def run(self):
         self.storage = Storage()
         self.config = Config()
-        interface = Interface(port=self.config.read("port"))
-        if self.config.read("version") == "UM25C":
-            interface.enable_higher_resolution()
+
+        interface = None
+        version = self.config.read("version")
+        if version.startswith("TC"):
+            ble = True
+            self.interface = self.backed.ble
+        else:
+            ble = False
+            self.interface = interface = Interface(port=self.config.read("port"))
+            if version == "UM25C":
+                interface.enable_higher_resolution()
 
         try:
             self.log("Connecting")
-            interface.connect()
+            if ble:
+                self.backed.ble.connect()
+            else:
+                interface.connect()
             self.emit("connected")
             self.log("Connected")
 
             while self.running:
-                data = interface.read()
+                if ble:
+                    data = self.backed.ble.read()
+                else:
+                    data = interface.read()
                 self.log(json.dumps(data))
                 if data:
                     data["name"] = self.config.read("name")
@@ -110,8 +159,12 @@ class Daemon:
         except:
             logging.exception(sys.exc_info()[0])
             self.emit("log", traceback.format_exc())
+            self.emit("log-error")
         finally:
-            interface.close()
+            if ble:
+                self.backed.ble.close()
+            else:
+                interface.close()
             self.emit("disconnected")
             self.log("Disconnected")
             self.thread = None

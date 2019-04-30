@@ -53,6 +53,8 @@ class Format:
         return "+" + str(data["data_plus"]) + " / -" + str(data["data_minus"]) + " V"
 
     def mode(self, data):
+        if data["mode_id"] is None:
+            return ""
         if data["mode_name"]:
             return data["mode_name"]
         return "id: " + str(data["mode_id"])
@@ -64,14 +66,17 @@ class Format:
         return str(data["accumulated_power"]) + " mWh"
 
     def accumulated_time(self, data):
+        if data["accumulated_time"] is None:
+            return ""
         return str(data["accumulated_time"]) + " seconds"
 
     def accumulated(self, data):
         parts = [
             self.accumulated_current(data),
             self.accumulated_power(data),
-            self.accumulated_time(data),
         ]
+        if data["accumulated_time"] is not None:
+            parts.append(self.accumulated_time(data))
         return " / ".join(parts)
 
     def resistance(self, data):

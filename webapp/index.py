@@ -25,6 +25,7 @@ class Index:
         blueprint.add_url_rule("/data", "data", self.render_data)
         blueprint.add_url_rule("/graph", "graph", self.render_graph)
         blueprint.add_url_rule("/graph.json", "graph_data", self.render_graph_data)
+        blueprint.add_url_rule("/ble", "ble", self.render_ble)
         blueprint.context_processor(self.fill)
         return blueprint
 
@@ -40,6 +41,7 @@ class Index:
             "port": self.config.read("port", ""),
             "rate": str(self.config.read("rate", 1.0)),
             "name": self.config.read("name", arrow.now().format("YYYY-MM-DD")),
+            "ble_address": self.config.read("ble_address"),
         }
 
         status = self.storage.fetch_status()
@@ -148,6 +150,14 @@ class Index:
             selected = "current"
 
         return names, selected
+
+    def render_ble(self):
+        self.init()
+        self.config.write("version", "TC66C")
+
+        return render_template(
+            "ble.html"
+        )
 
     def url_for(self, endpoint, **values):
         if endpoint == "static":

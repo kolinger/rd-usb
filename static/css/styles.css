@@ -116,3 +116,7 @@
         padding-right: 0;
     }
 }
+
+.ble .scan-result {
+    margin: 20px 0 0 0;
+}
