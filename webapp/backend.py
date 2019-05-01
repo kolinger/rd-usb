@@ -113,7 +113,8 @@ class Daemon:
     def stop(self):
         self.log("Disconnecting")
         self.running = False
-        self.interface.close()
+        if self.interface:
+            self.interface.close()
         while self.thread and self.thread.is_alive():
             time.sleep(0.1)
         self.emit("disconnected")
