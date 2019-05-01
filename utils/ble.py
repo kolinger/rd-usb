@@ -128,8 +128,8 @@ class Response:
             "accumulated_power": self.decode_integer(data, 76),
             "accumulated_time": None,
             "temperature": self.decode_integer(data, 92) * temperature_multiplier,
-            "data_plus": self.decode_integer(data, 96),
-            "data_minus": self.decode_integer(data, 100),
+            "data_plus": self.decode_integer(data, 96, 100),
+            "data_minus": self.decode_integer(data, 100, 100),
             "mode_id": None,
             "mode_name": None
         }
