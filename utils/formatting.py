@@ -1,6 +1,8 @@
 import arrow
 from dateutil import tz
 
+from utils.usb import decode_usb_data_lines
+
 
 class Format:
     table_fields = ["time", "voltage", "current", "power", "temperature", "data", "mode", "accumulated", "resistance"]
@@ -54,7 +56,7 @@ class Format:
 
     def mode(self, data):
         if data["mode_id"] is None:
-            return ""
+            return decode_usb_data_lines(data["data_plus"], data["data_minus"])
         if data["mode_name"]:
             return data["mode_name"]
         return "id: " + str(data["mode_id"])
