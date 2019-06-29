@@ -11,7 +11,7 @@ import arrow
 from socketio import Namespace
 
 from interfaces.ble import BleInterface
-from interfaces.regular import RegularInterface
+from interfaces.wrapper import Wrapper
 from utils.config import Config
 from utils.formatting import Format
 from utils.storage import Storage
@@ -121,13 +121,7 @@ class Daemon:
         self.storage = Storage()
         self.config = Config()
 
-        version = self.config.read("version")
-        if version.startswith("TC"):
-            self.interface = BleInterface(self.config.read("ble_address"))
-        else:
-            self.interface = RegularInterface(port=self.config.read("port"))
-            if version == "UM25C":
-                self.interface.enable_higher_resolution()
+        self.interface = Wrapper()
 
         try:
             self.log("Connecting")

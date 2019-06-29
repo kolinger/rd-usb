@@ -1,6 +1,7 @@
 import logging
 from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
+import multiprocessing
 import random
 import string
 import sys
@@ -16,6 +17,10 @@ from utils.config import Config, static_path, data_path
 from utils.storage import Storage
 from webapp.backend import Backend
 from webapp.index import Index
+
+if len(sys.argv) > 1 and "fork" in sys.argv[1]:
+    multiprocessing.freeze_support()
+    exit(0)
 
 port = 5000
 if len(sys.argv) > 1:
@@ -54,6 +59,9 @@ try:
     sockets.register_namespace(Backend())
 
     if __name__ == "__main__":
+        if sys.platform.startswith("win"):
+            multiprocessing.freeze_support()
+
         if not app.debug:
             def open_in_browser():
                 logging.info("Application is starting...")
