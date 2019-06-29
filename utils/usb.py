@@ -48,7 +48,6 @@ def decode_usb_data_lines(positive, negative):
 
         elif "values" in data:
             for pair in list(data["values"]):
-                print(pair)
                 if compare_voltage(positive, pair["positive"]) and compare_voltage(negative, pair["negative"]):
                     return data["name"]
 
