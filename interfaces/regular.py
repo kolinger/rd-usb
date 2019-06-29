@@ -1,11 +1,13 @@
 import codecs
 from collections import OrderedDict
+from time import time
 
-import arrow
 import serial
 
+from interfaces.interface import Interface
 
-class Interface:
+
+class RegularInterface(Interface):
     serial = None
     higher_resolution = False
     modes = {
@@ -49,7 +51,7 @@ class Interface:
 
         multiplier = 10 if self.higher_resolution else 1
 
-        result["timestamp"] = arrow.now().timestamp
+        result["timestamp"] = time()
         result["voltage"] = int("0x" + data[4] + data[5] + data[6] + data[7], 0) / (100 * multiplier)
         result["current"] = int("0x" + data[8] + data[9] + data[10] + data[11], 0) / (1000 * multiplier)
         result["power"] = int("0x" + data[12] + data[13] + data[14] + data[15] + data[16] +
@@ -73,6 +75,6 @@ class Interface:
 
         return result
 
-    def close(self):
+    def disconnect(self):
         if self.serial:
             self.serial.close()

@@ -1,24 +1,25 @@
 import asyncio
-import time
-import traceback
+from time import time, sleep
 
 from Crypto.Cipher import AES
 from bleak import BleakClient
-from bleak import BleakError
 from bleak import discover
+
+from interfaces.interface import Interface
 
 SERVER_RX_DATA = "0000ffe9-0000-1000-8000-00805f9b34fb"
 SERVER_TX_DATA = "0000ffe4-0000-1000-8000-00805f9b34fb"
 ASK_FOR_VALUES_COMMAND = "bgetva"
 
 
-class Ble:
+class BleInterface(Interface):
+    timeout = 30
     client = None
     loop = None
     bound = False
 
-    def __init__(self, backend):
-        self.backend = backend
+    def __init__(self, address):
+        self.address = address
         self.response = Response()
 
     def scan(self):
@@ -35,16 +36,25 @@ class Ble:
         return self.get_loop().run_until_complete(run())
 
     def connect(self):
-        self.get_loop().run_until_complete(self._connect_run(self.backend.config.read("ble_address")))
+        self.get_loop().run_until_complete(self._connect_run(self.address))
 
     async def _connect_run(self, address):
         self.client = BleakClient(address, loop=self.get_loop())
         await self.client.connect()
 
-    def close(self):
-        while self.loop.is_running():
-            time.sleep(0.1)
-        self.get_loop().run_until_complete(self._close_run())
+    def disconnect(self):
+        expiration = time() + self.timeout
+        while self.loop.is_running() and time() <= expiration:
+            sleep(0.1)
+
+        sleep(1)
+
+        try:
+            self.get_loop().run_until_complete(self._close_run())
+        except RuntimeError as e:
+            if "loop is already running" not in str(e):
+                raise e
+
         self.bound = False
 
     async def _close_run(self):
@@ -67,14 +77,27 @@ class Ble:
 
     async def _read_run(self):
         self.response.reset()
-        await self.client.write_gatt_char(SERVER_RX_DATA, self.encode_command(ASK_FOR_VALUES_COMMAND))
-        if not self.bound:
-            self.bound = True
-            await self.client.start_notify(SERVER_TX_DATA, self.response.callback)
-        while not self.response.is_complete():
-            time.sleep(0.1)
-        data = self.response.decode()
-        return data
+
+        for retry in range(0, 3):
+            await self.client.write_gatt_char(SERVER_RX_DATA, self.encode_command(ASK_FOR_VALUES_COMMAND))
+
+            if not self.bound:
+                self.bound = True
+                await self.client.start_notify(SERVER_TX_DATA, self.response.callback)
+
+            expiration = time() + self.timeout
+            while not self.response.is_complete() and time() <= expiration:
+                sleep(0.1)
+
+            if not self.response.is_complete():
+                continue
+
+            break
+
+        if not self.response.is_complete():
+            raise NoResponseException
+
+        return self.response.decode()
 
     def encode_command(self, command):
         return (command + "\r\n").encode("ascii")
@@ -119,7 +142,7 @@ class Response:
             temperature_multiplier = 1
 
         return {
-            "timestamp": time.time(),
+            "timestamp": time(),
             "voltage": self.decode_integer(data, 48, 10000),
             "current": self.decode_integer(data, 52, 100000),
             "power": self.decode_integer(data, 56, 10000),
@@ -145,3 +168,6 @@ class Response:
         self.buffer = bytearray()
         self.index = 0
 
+
+class NoResponseException(Exception):
+    pass

@@ -4,16 +4,16 @@ import logging
 import re
 import sys
 from threading import Thread
-import time
+from time import time, sleep
 import traceback
 
 import arrow
 from socketio import Namespace
 
-from utils.ble import Ble
+from interfaces.ble import BleInterface
+from interfaces.regular import RegularInterface
 from utils.config import Config
 from utils.formatting import Format
-from utils.rdusb import Interface
 from utils.storage import Storage
 
 
@@ -22,7 +22,6 @@ class Backend(Namespace):
 
     def __init__(self):
         super().__init__()
-        self.ble = Ble(self)
         self.daemon = Daemon(self)
 
     def init(self):
@@ -45,8 +44,7 @@ class Backend(Namespace):
         storage = Storage()
         last = storage.fetch_last_measurement_by_name(data["name"])
         if last:
-            now = arrow.now()
-            if now.timestamp - int(last["timestamp"]) > 3600:
+            if time() - int(last["timestamp"]) > 3600:
                 match = re.match(".+( [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2})$", data["name"])
                 if match:
                     data["name"] = data["name"][:-len(match.group(1))]
@@ -68,7 +66,7 @@ class Backend(Namespace):
     def on_scan(self, sid):
         self.init()
         try:
-            data = self.ble.scan()
+            data = BleInterface(self.config.read("ble_address")).scan()
             result = ["Results:"]
             if len(data) == 0:
                 result.append("no device found, try again")
@@ -114,46 +112,37 @@ class Daemon:
         self.log("Disconnecting")
         self.running = False
         if self.interface:
-            self.interface.close()
+            self.interface.disconnect()
         while self.thread and self.thread.is_alive():
-            time.sleep(0.1)
+            sleep(0.1)
         self.emit("disconnected")
 
     def run(self):
         self.storage = Storage()
         self.config = Config()
 
-        interface = None
         version = self.config.read("version")
         if version.startswith("TC"):
-            ble = True
-            self.interface = self.backed.ble
+            self.interface = BleInterface(self.config.read("ble_address"))
         else:
-            ble = False
-            self.interface = interface = Interface(port=self.config.read("port"))
+            self.interface = RegularInterface(port=self.config.read("port"))
             if version == "UM25C":
-                interface.enable_higher_resolution()
+                self.interface.enable_higher_resolution()
 
         try:
             self.log("Connecting")
-            if ble:
-                self.backed.ble.connect()
-            else:
-                interface.connect()
+            self.retry(self.interface.connect)
             self.emit("connected")
             self.log("Connected")
 
             while self.running:
-                if ble:
-                    data = self.backed.ble.read()
-                else:
-                    data = interface.read()
+                data = self.retry(self.interface.read)
                 self.log(json.dumps(data))
                 if data:
                     data["name"] = self.config.read("name")
                     self.update(data)
                 self.storage.store_measurement(data)
-                time.sleep(self.config.read("rate"))
+                sleep(self.config.read("rate"))
 
         except (KeyboardInterrupt, SystemExit):
             raise
@@ -162,10 +151,7 @@ class Daemon:
             self.emit("log", traceback.format_exc())
             self.emit("log-error")
         finally:
-            if ble:
-                self.backed.ble.close()
-            else:
-                interface.close()
+            self.interface.disconnect()
             self.emit("disconnected")
             self.log("Disconnected")
             self.thread = None
@@ -191,6 +177,23 @@ class Daemon:
             "table": table,
             "graph": graph,
         }))
+
+    def retry(self, callback):
+        timeout = time() + 30
+        while True:
+            try:
+                return callback()
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                logging.exception(sys.exc_info()[0])
+                if timeout <= time():
+                    raise sys.exc_info()[0]
+                else:
+                    self.log("operation failed, retrying")
+                    self.emit("log", traceback.format_exc())
+                    self.interface.disconnect()
+                    self.interface.connect()
 
     def emit(self, event, data=None):
         if event == "log":
