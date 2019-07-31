@@ -20,6 +20,7 @@ class Wrapper(Interface):
     def run(self):
         if self.process is None or not self.process.is_alive():
             self.process = Process(target=self._run, args=(self.command, self.result))
+            self.process.daemon = True
             self.process.start()
 
     def _run(self, command, result):
