@@ -1,5 +1,9 @@
 # -*- mode: python -*-
 
+from runpy import run_path
+version_script = os.path.realpath(workpath + "/../../utils/version.py")
+run_path(version_script, run_name="write")
+
 from PyInstaller.utils.hooks import collect_dynamic_libs
 
 block_cipher = None
@@ -36,3 +40,5 @@ exe = EXE(pyz,
           upx=False,
           runtime_tmpdir=None,
           console=True )
+
+run_path(version_script, run_name="clean")

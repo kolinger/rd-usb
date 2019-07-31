@@ -10,6 +10,7 @@ from flask.templating import render_template
 from utils.config import Config, static_path
 from utils.formatting import Format
 from utils.storage import Storage
+from utils.version import version
 
 
 class Index:
@@ -35,6 +36,7 @@ class Index:
 
     def fill(self):
         variables = {
+            "rd_user_version": version,
             "format": Format(),
             "url_for": self.url_for,
             "version": self.config.read("version", "UM34C"),
