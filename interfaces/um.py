@@ -7,7 +7,7 @@ import serial
 from interfaces.interface import Interface
 
 
-class RegularInterface(Interface):
+class UmInterface(Interface):
     serial = None
     higher_resolution = False
     modes = {

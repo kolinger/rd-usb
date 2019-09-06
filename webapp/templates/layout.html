@@ -53,13 +53,15 @@
                         <option value="UM25C"{% if version == "UM25C" %} selected{% endif %}>UM25C</option>
                         <option value="UM24C"{% if version == "UM24C" %} selected{% endif %}>UM24C</option>
                         <option value="TC66C"{% if version == "TC66C" %} selected{% endif %}>TC66C</option>
+                        <option value="TC66C-USB"{% if version == "TC66C-USB" %} selected{% endif %}>TC66C USB</option>
                     </select>
                 </div>
-                <div class="form-group" data-serial{% if version.startswith("TC") %} style="display:none"{% endif %}>
+                {% set tc_ble = version.startswith("TC") and not version.endswith("USB") %}
+                <div class="form-group" data-serial{% if tc_ble %} style="display:none"{% endif %}>
                     <input type="text" class="form-control" name="port" placeholder="Serial port"
                            value="{{ port }}" {% if connect_disabled %}disabled {% endif %}/>
                 </div>
-                <div class="form-group" data-ble{% if not version.startswith("TC") %} style="display:none"{% endif %}>
+                <div class="form-group" data-ble{% if not tc_ble %} style="display:none"{% endif %}>
                     <a href="{{ url_for("index.ble") }}">
                         {% if ble_address %}
                             {{ ble_address }}

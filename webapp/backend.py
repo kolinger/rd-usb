@@ -10,7 +10,7 @@ import traceback
 import arrow
 from socketio import Namespace
 
-from interfaces.ble import BleInterface
+from interfaces.tc import TcBleInterface
 from interfaces.wrapper import Wrapper
 from utils.config import Config
 from utils.formatting import Format
@@ -66,7 +66,7 @@ class Backend(Namespace):
     def on_scan(self, sid):
         self.init()
         try:
-            data = BleInterface(self.config.read("ble_address")).scan()
+            data = TcBleInterface(self.config.read("ble_address")).scan()
             result = ["Results:"]
             if len(data) == 0:
                 result.append("no device found, try again")

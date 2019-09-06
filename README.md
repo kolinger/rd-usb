@@ -4,10 +4,7 @@ Web GUI for RuiDeng USB testers (UM34C, UM24C, UM25C, TC66C)
 Simple web GUI written in Python 3. Measurements are stored in sqlite database. Tables and graphs are supported.
 Live preview and graphing is also available.
 
-Tested on UM34C/UM24C/UM25C.
-
-TC66C also works but this meter is using different mechanism for communication and support for 
-this technology is limited. See requirements for more information.
+Tested on UM34C/UM24C/UM25C/TC66C.
 
 Based on https://github.com/sebastianha/um34c
 
@@ -15,12 +12,15 @@ Based on https://github.com/sebastianha/um34c
 Requirements
 --
 - UM34C/UM24C/UM25C - meter needs to be connected as serial port
-    - Pairing with Windows Settings works fine. After successful installation some serial ports are
+    - Pairing with Windows Settings works fine. After successful pairing some serial ports are
     installed in Device Manager. In my case two. One of them works.
     - On Linux `rfcomm` can be used
 - TC66C - meter is using BLE instead of regular bluetooth so pairing will not work nor RFCOMM will.
     - BLE has very limited support on desktop devices, see used library for supported platforms and versions: 
     https://github.com/hbldh/bleak#features
+- TC66C USB - meter connected with USB
+    - Meter connected with USB exposes itself as serial port, 
+    see Device Manager in Windows (or /dev/ttyUSB0 in Linux) for COM port number
 
 Installation
 --
@@ -50,7 +50,7 @@ On Linux use `python3` and `pip3`.
 Usage
 --
 
-**UM34C/UM24C/UM25C**
+**UM34C/UM24C/UM25C Bluetooth or TC66C USB**
 1. Find your serial port (in Device Manager) and fill serial port input.
 2. Name your session. For example 'testing some power bank'. This is
 used to seperate multiple measurements from each other.
@@ -61,12 +61,12 @@ use slower rate. Choose carefuly.
 5. Connection will be hopefully successful and you will see measurements in log.
 Otherwise read log for error messages.
 
-**TC66C**
-1. Make sure your OS is supported and have bluetooth with BLE support (Bluetooth Low Energy)
+**TC66C Bluetooth**
+1. Make sure your OS is supported and has bluetooth with BLE support (Bluetooth Low Energy)
 2. Select TC66C from devices and follow with Setup link.
 3. Scan for devices and select your device from list by clicking on it
 4. After this you can connect simply by using Connect button. Setup is required only for new/different device.
-5. Rest is same as UMxxC but you don't need specify serial port. Bluetooth address is used instead.
+5. Rest is same as UM meters but you don't need specify serial port. Bluetooth address is used instead.
 
 ![setup](screenshots/setup.png)
 

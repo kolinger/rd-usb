@@ -3,9 +3,9 @@ from queue import Empty
 from time import time
 import traceback
 
-from interfaces.ble import BleInterface
 from interfaces.interface import Interface
-from interfaces.regular import RegularInterface
+from interfaces.tc import TcBleInterface, TcSerialInterface
+from interfaces.um import UmInterface
 from utils.config import Config
 
 
@@ -77,9 +77,12 @@ class Receiver:
 
         version = config.read("version")
         if version.startswith("TC"):
-            interface = BleInterface(config.read("ble_address"))
+            if version.endswith("USB"):
+                interface = TcSerialInterface(config.read("port"))
+            else:
+                interface = TcBleInterface(config.read("ble_address"))
         else:
-            interface = RegularInterface(config.read("port"))
+            interface = UmInterface(config.read("port"))
             if version == "UM25C":
                 interface.enable_higher_resolution()
 

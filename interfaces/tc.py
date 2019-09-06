@@ -4,6 +4,7 @@ from time import time, sleep
 from Crypto.Cipher import AES
 from bleak import BleakClient
 from bleak import discover
+import serial
 
 from interfaces.interface import Interface
 
@@ -12,7 +13,7 @@ SERVER_TX_DATA = "0000ffe4-0000-1000-8000-00805f9b34fb"
 ASK_FOR_VALUES_COMMAND = "bgetva"
 
 
-class BleInterface(Interface):
+class TcBleInterface(Interface):
     timeout = 30
     client = None
     loop = None
@@ -108,6 +109,32 @@ class BleInterface(Interface):
         return self.loop
 
 
+class TcSerialInterface(Interface):
+    serial = None
+
+    def __init__(self, port):
+        self.port = port
+        self.response = Response()
+
+    def connect(self):
+        if self.serial is None:
+            self.serial = serial.Serial(port=self.port, baudrate=115200, timeout=3, write_timeout=0)
+
+    def read(self):
+        self.send("getva")
+        data = self.serial.read(192)
+        self.response.reset()
+        self.response.callback(None, data)
+        return self.response.decode()
+
+    def send(self, value):
+        self.serial.write(value.encode("ascii"))
+
+    def disconnect(self):
+        if self.serial:
+            self.serial.close()
+
+
 class Response:
     key = [
         88, 33, -6, 86, 1, -78, -16, 38,
@@ -118,9 +145,12 @@ class Response:
     buffer = bytearray()
     index = 0
 
-    def callback(self, sender, data):
+    def append(self, data):
         self.buffer.extend(data)
         self.index += len(data)
+
+    def callback(self, sender, data):
+        self.append(data)
 
     def is_complete(self):
         return self.index >= 192
@@ -133,7 +163,10 @@ class Response:
         aes = AES.new(bytes(key), AES.MODE_ECB)
         return aes.decrypt(self.buffer)
 
-    def decode(self):
+    def decode(self, data=None):
+        if data is not None:
+            self.append(data)
+
         data = self.decrypt()
 
         if self.decode_integer(data, 88) == 1:

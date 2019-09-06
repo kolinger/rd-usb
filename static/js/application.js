@@ -31,7 +31,7 @@ ntdrt.application = {
 
         $(document).on('change', '.setup select[name="version"]', function (e) {
             var control = $(this);
-            if (control.val().indexOf('TC') === 0) {
+            if (control.val().indexOf('TC') === 0 && control.val().indexOf('USB') === -1) {
                 $('.setup [data-serial]').hide();
                 $('.setup [data-ble]').show();
             } else {
