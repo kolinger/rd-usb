@@ -35,18 +35,6 @@ class Index:
         self.config = Config()
         self.storage = Storage()
 
-        value = request.args.get("version")
-        if value is not None:
-            self.config.write("version", value)
-
-        value = request.args.get("name")
-        if value is not None:
-            self.config.write("name", value)
-
-        value = request.args.get("rate")
-        if value is not None:
-            self.config.write("rate", float(value))
-
     def fill(self):
         variables = {
             "rd_user_version": version,
@@ -166,16 +154,29 @@ class Index:
 
         return names, selected
 
+    def fill_config_from_parameters(self):
+        value = request.args.get("version")
+        if value is not None:
+            self.config.write("version", value)
+
+        value = request.args.get("name")
+        if value is not None:
+            self.config.write("name", value)
+
+        value = request.args.get("rate")
+        if value is not None:
+            self.config.write("rate", float(value))
+
     def render_ble(self):
         self.init()
-
+        self.fill_config_from_parameters()
         return render_template(
             "ble.html"
         )
 
     def render_serial(self):
         self.init()
-
+        self.fill_config_from_parameters()
         return render_template(
             "serial.html"
         )
