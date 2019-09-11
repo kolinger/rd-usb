@@ -226,15 +226,17 @@ class Daemon:
 
     def retry(self, callback):
         timeout = time() + 30
+        count = 10
         while True:
             try:
                 return callback()
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
+                count -= 1
                 logging.exception(sys.exc_info()[0])
-                if timeout <= time():
-                    raise sys.exc_info()[0]
+                if timeout <= time() or count <= 0:
+                    raise
                 else:
                     self.log("operation failed, retrying")
                     self.emit("log", traceback.format_exc())
