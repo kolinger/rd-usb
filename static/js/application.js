@@ -90,7 +90,7 @@ ntdrt.application = {
 
         socket.on('update', function () {
             if (newConnection) {
-                window.location.href = "/graph?name=current";
+                window.location.href = "/graph?name=";
             }
         });
 

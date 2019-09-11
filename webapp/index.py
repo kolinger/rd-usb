@@ -111,7 +111,7 @@ class Index:
         names, selected = self.prepare_selection()
 
         last_measurement = None
-        if selected == "current":
+        if selected == "":
             last_measurement = self.storage.fetch_last_measurement()
 
         return render_template(
@@ -150,7 +150,7 @@ class Index:
         names = self.storage.fetch_measurement_names()
         selected = request.args.get("name")
         if not selected:
-            selected = "current"
+            selected = ""
 
         return names, selected
 

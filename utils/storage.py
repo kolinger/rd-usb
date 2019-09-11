@@ -126,7 +126,7 @@ class Storage:
             return cursor.fetchone()
 
     def translate_selected_name(self, selected):
-        if selected == "current":
+        if selected == "":
             last = self.fetch_last_measurement()
             if last:
                 return last["name"]
