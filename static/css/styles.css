@@ -117,6 +117,15 @@
     }
 }
 
-.ble .scan-result {
+.ble .scan-result,
+.serial .scan-result {
+    margin: 20px 0 0 0;
+}
+
+.serial input[name="port"] {
+    width: 150px;
+}
+
+.serial .scan {
     margin: 20px 0 0 0;
 }

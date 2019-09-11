@@ -15,6 +15,7 @@ from interfaces.wrapper import Wrapper
 from utils.config import Config
 from utils.formatting import Format
 from utils.storage import Storage
+from serial.tools.list_ports import comports
 
 
 class Backend(Namespace):
@@ -63,16 +64,67 @@ class Backend(Namespace):
         self.emit("connecting")
         self.daemon.start()
 
-    def on_scan(self, sid):
+    def on_scan_ble(self, sid):
         self.init()
         try:
-            data = TcBleInterface(self.config.read("ble_address")).scan()
             result = ["Results:"]
+
+            data = TcBleInterface(self.config.read("ble_address")).scan()
             if len(data) == 0:
                 result.append("no device found, try again")
+
             for device in data:
                 name = device["address"] + " (" + device["name"] + ")"
                 result.append("<a href=\"#\" data-address=\"" + device["address"] + "\">" + name + "</a>")
+
+            self.emit("scan-result", "\n".join(result))
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            logging.exception(sys.exc_info()[0])
+            self.emit("scan-result", traceback.format_exc())
+
+    def on_scan_serial(self, sid):
+        self.init()
+        try:
+            result = ["Results:"]
+
+            data = comports()
+            if len(data) == 0:
+                result.append("no device found, try again")
+            else:
+                additional = [
+                    "description",
+                    "manufacturer",
+                    "product",
+                    "serial_number",
+                    "vid",
+                    "pid",
+                ]
+
+                for device in data:
+                    description = []
+
+                    for property in additional:
+                        value = getattr(device, property)
+                        if value is not None:
+                            value = str(value).strip()
+                            content = property + ": " + value
+                            if property == "description":
+                                content = value
+                            elif property == "vid":
+                                content = "VID_" + hex(int(value))[2:].upper().zfill(4)
+                            elif property == "pid":
+                                content = "PID_" + hex(int(value))[2:].upper().zfill(4)
+                            description.append(content)
+
+                    name = device.device
+                    if len(description) > 0:
+                        name += " (" + ", ".join(description) + ")"
+
+                    result.append("<a href=\"#\" data-address=\"" + device.device + "\">" + name + "</a>")
+
             self.emit("scan-result", "\n".join(result))
 
         except (KeyboardInterrupt, SystemExit):

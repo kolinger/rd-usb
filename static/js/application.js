@@ -31,13 +31,26 @@ ntdrt.application = {
 
         $(document).on('change', '.setup select[name="version"]', function (e) {
             var control = $(this);
-            if (control.val().indexOf('TC') === 0 && control.val().indexOf('USB') === -1) {
+            var version = control.val();
+            if (version.indexOf('TC') === 0 && version.indexOf('USB') === -1) {
                 $('.setup [data-serial]').hide();
                 $('.setup [data-ble]').show();
             } else {
                 $('.setup [data-serial]').show();
                 $('.setup [data-ble]').hide();
             }
+        });
+
+        $(document).on('click', '.setup-link', function (e) {
+            e.preventDefault();
+            var link = $(this).attr('href');
+            var parts = [];
+            var data = self.collect_connection_data();
+            for (var name in data) {
+                parts.push(name + '=' + encodeURIComponent(data[name]));
+            }
+            var sep = link.indexOf('?') === -1 ? '?' : '&';
+            window.location.href = link + sep + parts.join('&');
         });
 
         self.connection();
@@ -87,44 +100,95 @@ ntdrt.application = {
 
         $(document).on('submit', '#connect', function (e) {
             var form = $(e.target);
-            var input = form.find('[name="port"]');
+            var input = form.find('[name="version"]');
             if (input.is(':disabled')) {
                 socket.emit('close');
             } else {
-                var data = {
-                    version: form.find('[name="version"]').val(),
-                    port: input.val(),
-                    rate: form.find('[name="rate"]').val(),
-                    name: form.find('[name="name"]').val()
-                };
-                data = JSON.stringify(data);
-                socket.emit('open', data);
+                self.connect();
             }
             return false;
         });
 
-        $(document).on('click', '.ble .scan button', function (e) {
-            socket.emit('scan');
-            $('.ble .scan-result').text('Scanning...');
+        $(document).on('click', '.serial [data-connect]', function (e) {
+            e.preventDefault();
+            var port = $('.serial input[name="port"]').val();
+            self.connect({port: port});
         });
 
+        var serial = function () {
+            socket.emit('scan_serial');
+            $('.scan-result').text('Scanning... This can take a while...');
+        };
+        $(document).on('click', '.serial .scan button', serial);
+        if ($('.serial .scan').length) {
+            serial();
+        }
+
+        var ble = function () {
+            socket.emit('scan_ble');
+            $('.scan-result').text('Scanning... This can take a while...');
+        };
+        $(document).on('click', '.ble .scan button', ble);
+        if ($('.ble .scan').length) {
+            ble();
+        }
+
         socket.on('scan-result', function (result) {
-            $('.ble .scan-result').html("<pre>" + result + "</pre>");
+            $('.scan-result').html("<pre>" + result + "</pre>");
+        });
+
+        $(document).on('click', '.serial .scan-result [data-address]', function (e) {
+            e.preventDefault();
+            $('.scan-result').empty();
+            self.connect({port: $(this).attr('data-address')});
         });
 
         $(document).on('click', '.ble .scan-result [data-address]', function (e) {
             e.preventDefault();
-            $('.ble .scan-result').empty();
-            var form = $('#connect');
-            var data = {
-                version: form.find('[name="version"]').val(),
-                ble_address: $(this).attr('data-address'),
-                rate: form.find('[name="rate"]').val(),
-                name: form.find('[name="name"]').val()
-            };
-            data = JSON.stringify(data);
-            socket.emit('open', data);
+            $('.scan-result').empty();
+            self.connect({ble_address: $(this).attr('data-address')});
         });
+    },
+
+    collect_connection_data: function () {
+        var form = $('#connect');
+        return {
+            version: form.find('[name="version"]').val(),
+            port: form.find('[name="port"]').val(),
+            rate: form.find('[name="rate"]').val(),
+            name: form.find('[name="name"]').val()
+        };
+    },
+
+    connect: function (override) {
+        var self = this;
+
+        var data = self.collect_connection_data();
+        if (override) {
+            for (var name in override) {
+                if (override.hasOwnProperty(name)) {
+                    data[name] = override[name];
+                }
+            }
+
+            var form = $('#connect');
+            if (override.hasOwnProperty('port')) {
+                form.find('[data-ble]').hide();
+                var serial = form.find('[data-serial]');
+                serial.show();
+                serial.find('.setup-link').text(data['port']);
+
+            } else if (override.hasOwnProperty('ble_address')) {
+                form.find('[data-serial]').hide();
+                var ble = form.find('[data-serial]');
+                ble.show();
+                ble.find('.setup-link').text(data['ble_address']);
+            }
+        }
+
+        data = JSON.stringify(data);
+        self.socket.emit('open', data);
+        return data;
     },
 
     log: function () {

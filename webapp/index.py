@@ -27,12 +27,25 @@ class Index:
         blueprint.add_url_rule("/graph", "graph", self.render_graph)
         blueprint.add_url_rule("/graph.json", "graph_data", self.render_graph_data)
         blueprint.add_url_rule("/ble", "ble", self.render_ble)
+        blueprint.add_url_rule("/serial", "serial", self.render_serial)
         blueprint.context_processor(self.fill)
         return blueprint
 
     def init(self):
         self.config = Config()
         self.storage = Storage()
+
+        value = request.args.get("version")
+        if value is not None:
+            self.config.write("version", value)
+
+        value = request.args.get("name")
+        if value is not None:
+            self.config.write("name", value)
+
+        value = request.args.get("rate")
+        if value is not None:
+            self.config.write("rate", float(value))
 
     def fill(self):
         variables = {
@@ -155,10 +168,16 @@ class Index:
 
     def render_ble(self):
         self.init()
-        self.config.write("version", "TC66C")
 
         return render_template(
             "ble.html"
+        )
+
+    def render_serial(self):
+        self.init()
+
+        return render_template(
+            "serial.html"
         )
 
     def url_for(self, endpoint, **values):

@@ -56,13 +56,19 @@
                         <option value="TC66C-USB"{% if version == "TC66C-USB" %} selected{% endif %}>TC66C USB</option>
                     </select>
                 </div>
-                {% set tc_ble = version.startswith("TC") and not version.endswith("USB") %}
+                {% set tc_ble = version and version.startswith("TC") and not version.endswith("USB") %}
                 <div class="form-group" data-serial{% if tc_ble %} style="display:none"{% endif %}>
-                    <input type="text" class="form-control" name="port" placeholder="Serial port"
-                           value="{{ port }}" {% if connect_disabled %}disabled {% endif %}/>
+                    <a href="{{ url_for("index.serial") }}" class="setup-link">
+                        {% if port %}
+                            {{ port }}
+                        {% else %}
+                            Setup
+                        {% endif %}
+                    </a>
+                    <input type="hidden" name="port" value="{{ port }}" {% if connect_disabled %}disabled {% endif %}/>
                 </div>
                 <div class="form-group" data-ble{% if not tc_ble %} style="display:none"{% endif %}>
-                    <a href="{{ url_for("index.ble") }}">
+                    <a href="{{ url_for("index.ble") }}" class="setup-link">
                         {% if ble_address %}
                             {{ ble_address }}
                         {% else %}
@@ -70,7 +76,7 @@
                         {% endif %}
                     </a>
                 </div>
-                <div class="form-group">Name</div>
+                <div class="form-group">Session</div>
                 <div class="form-group">
                     <input type="text" class="form-control" name="name"
                            value="{{ name }}" {% if connect_disabled %}disabled {% endif %}/>

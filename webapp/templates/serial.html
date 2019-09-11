@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="serial">
+        <div class="form-inline">
+            <div class="form-group">
+                <input name="port" class="form-control" value="{{ port }}" placeholder="COM0, /dev/ttyUSB0, ..." />
+            </div>
+            <button class="btn btn-default" data-connect>Connect</button>
+        </div>
+
+        <div class="scan">
+            <button class="btn btn-default" data-scan>Refresh</button>
+        </div>
+
+        <div class="scan-result"></div>
+    </div>
+{% endblock %}
