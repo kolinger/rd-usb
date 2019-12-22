@@ -8,6 +8,7 @@ from time import time, sleep
 import traceback
 
 import arrow
+from serial.tools.list_ports import comports
 from socketio import Namespace
 
 from interfaces.tc import TcBleInterface
@@ -15,7 +16,6 @@ from interfaces.wrapper import Wrapper
 from utils.config import Config
 from utils.formatting import Format
 from utils.storage import Storage
-from serial.tools.list_ports import comports
 
 
 class Backend(Namespace):
@@ -57,7 +57,8 @@ class Backend(Namespace):
         except ValueError:
             pass
 
-        if data["version"].startswith("TC") and ("ble_address" not in data or not data["ble_address"]):
+        tc_ble = data["version"].startswith("TC") and "USB" not in data["version"]
+        if tc_ble and ("ble_address" not in data or not data["ble_address"]):
             self.daemon.log("BLE address is missing. Select address in Setup")
             return
 
