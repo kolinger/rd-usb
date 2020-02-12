@@ -15,6 +15,10 @@ Requirements
     - Pairing with Windows Settings works fine. After successful pairing some serial ports are
     installed. In my case two. One of them works.
     - On Linux `rfcomm` can be used
+        - Pair device via Settings -> Bluetooth
+        - Retrieve  bluetooth address of paired device with `echo paired-devices | bluetoothctl`
+        - Bind address to serial port with `rfcomm bind 0 aa:bb:cc:dd:ee:ff`
+    - Pin is 1234
 - TC66C - meter is using BLE instead of regular bluetooth so pairing will not work nor RFCOMM will.
     - BLE has very limited support on desktop devices, see used library for supported platforms and versions: 
     https://github.com/hbldh/bleak#features
@@ -51,10 +55,10 @@ Usage
 **UM34C/UM24C/UM25C Bluetooth or TC66C USB**
 1. Select your device version.
 2. Name your session. For example 'testing some power bank'. This is
-   used to seperate multiple measurements from each other.
+   used to separate multiple measurements from each other.
 3. Select sample rate. Faster sample rate will result in more accurate data but also
    will create a lot more data. For short measurements use faster sample rate. For longer
-   use slower rate. Choose carefuly.
+   use slower rate. Choose carefully.
 4. Follow Setup link to find your serial port or click Connect if you already have port selected.
 5. Connection will be hopefully successful and you will see live measurements in graph.
    Otherwise read log for error messages.
