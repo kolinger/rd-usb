@@ -12,13 +12,12 @@ Based on https://github.com/sebastianha/um34c
 Requirements
 --
 - UM34C/UM24C/UM25C - meter needs to be connected as serial port
-    - Pairing with Windows Settings works fine. After successful pairing some serial ports are
+    - Pairing with Windows Settings works fine. Pin is 1234. After successful pairing some serial ports are
     installed. In my case two. One of them works.
-    - On Linux `rfcomm` can be used
-        - Pair device via Settings -> Bluetooth
-        - Retrieve  bluetooth address of paired device with `echo paired-devices | bluetoothctl`
-        - Bind address to serial port with `rfcomm bind 0 aa:bb:cc:dd:ee:ff`
-    - Pin is 1234
+    - On Linux `rfcomm` and `hcitool` can be used (both provided by bluez package)
+        - Retrieve bluetooth address with `hcitool scan`
+        - Bind retrieved address to serial port with `rfcomm bind 0 aa:bb:cc:dd:ee:ff`. 
+        This step is not persistent. Serial port will disappear after reboot. Also rd-usb needs to have permissions to use /dev/rfcommX.
 - TC66C - meter is using BLE instead of regular bluetooth so pairing will not work nor RFCOMM will.
     - BLE has very limited support on desktop devices, see used library for supported platforms and versions: 
     https://github.com/hbldh/bleak#features
