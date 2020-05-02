@@ -7,3 +7,6 @@ appdirs==1.4.3
 
 bleak==0.4.0
 pycryptodome==3.8.2
+
+pywebview~=3.2
+cefpython3~=66.0

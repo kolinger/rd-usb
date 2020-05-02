@@ -17,7 +17,8 @@ Requirements
     - On Linux `rfcomm` and `hcitool` can be used (both provided by bluez package)
         - Retrieve bluetooth address with `hcitool scan`
         - Bind retrieved address to serial port with `rfcomm bind 0 aa:bb:cc:dd:ee:ff`. 
-        This step is not persistent. Serial port will disappear after reboot. Also rd-usb needs to have permissions to use /dev/rfcommX.
+        This step is not persistent. Serial port will disappear after reboot. Also rd-usb needs to 
+        have permissions to use /dev/rfcommX.
 - TC66C - meter is using BLE instead of regular bluetooth so pairing will not work nor RFCOMM will.
     - BLE has very limited support on desktop devices, see used library for supported platforms and versions: 
     https://github.com/hbldh/bleak#features
@@ -28,9 +29,12 @@ Installation
 --
 
 ### Binaries (Win x64 only)
-1. Download from [releases](https://github.com/kolinger/rd-usb/releases)
-2. Run executable and web server will be shortly spawned on address http://127.0.0.1:5000
-3. Application will be probably blocked by Microsoft SmartScreen. For unblock click `More info`
+- Download from [releases](https://github.com/kolinger/rd-usb/releases)
+    - **rd-usb.exe** is CLI web server application. GUI is provided by web browser. 
+    Run executable and web server will be shortly spawned on address http://127.0.0.1:5000.
+    - **rd-usb-install.exe** is installer of standalone GUI application. Works without web browser.
+    Embedded browser is used instead. External web browser still can be used with address (see above).
+- Application will be probably blocked by Microsoft SmartScreen. For unblock click `More info`
 and `Run anyway`. I don't have certificate for signing and application does not have any
 reputation so Microsoft will block by default.
 
@@ -89,6 +93,10 @@ Development
 
 ### Building binaries
 
-1. Install pyinstaller: `pip install pyinstaller`
-2. Generate binary with provided spec file: `pyinstaller pyinstaller.spec`
+1. Install pyinstaller: `pip install pyinstaller` and [NSIS](https://nsis.sourceforge.io/Download) installer
+2. Generate binaries: 
+    - `pyinstaller pyinstaller-cli.spec`
+    - `pyinstaller pyinstaller.spec`
+    - `makensis.exe installer.nsi`
+    - or use `build.cmd`
 3. Binaries will be saved in `dist` directory

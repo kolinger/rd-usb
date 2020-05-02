@@ -1,3 +1,4 @@
+from http.client import HTTPConnection
 import logging
 from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
@@ -5,8 +6,8 @@ import multiprocessing
 import random
 import string
 import sys
-import threading
-import time
+from threading import Thread
+from time import sleep
 from urllib import request
 import webbrowser
 
@@ -18,71 +19,80 @@ from utils.storage import Storage
 from webapp.backend import Backend
 from webapp.index import Index
 
-if len(sys.argv) > 1 and "fork" in sys.argv[1]:
-    multiprocessing.freeze_support()
-    exit(0)
 
-port = 5000
-if len(sys.argv) > 1:
-    port = int(sys.argv[1])
+def url_ok(url):
+    try:
+        request.urlopen(url=url)
+        return True
+    except Exception as e:
+        return False
 
-app = Flask(__name__, static_folder=static_path)
-app.register_blueprint(Index().register())
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+def run(browser=True):
+    port = 5000
+    if len(sys.argv) > 1:
+        port = int(sys.argv[1])
 
-console = StreamHandler()
-console.setLevel(logging.DEBUG)
-console.setFormatter(formatter)
-logger.addHandler(console)
+    app = Flask(__name__, static_folder=static_path)
+    app.register_blueprint(Index().register())
 
-if not app.debug:
-    file = TimedRotatingFileHandler(data_path + "/error.log", when="w0", backupCount=14)
-    file.setLevel(logging.ERROR)
-    file.setFormatter(formatter)
-    logger.addHandler(file)
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
-try:
-    config = Config()
-    secret_key = config.read("secret_key")
-    if not secret_key:
-        secret_key = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
-        config.write("secret_key", secret_key)
-    app.secret_key = secret_key
+    console = StreamHandler()
+    console.setLevel(logging.DEBUG)
+    console.setFormatter(formatter)
+    logger.addHandler(console)
 
-    Storage().init()
+    if not app.debug:
+        file = TimedRotatingFileHandler(data_path + "/error.log", when="w0", backupCount=14)
+        file.setLevel(logging.ERROR)
+        file.setFormatter(formatter)
+        logger.addHandler(file)
 
-    sockets = socketio.Server()
-    app.wsgi_app = socketio.Middleware(sockets, app.wsgi_app)
-    sockets.register_namespace(Backend())
+    try:
+        config = Config()
+        secret_key = config.read("secret_key")
+        if not secret_key:
+            secret_key = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
+            config.write("secret_key", secret_key)
+        app.secret_key = secret_key
 
-    if __name__ == "__main__":
-        if sys.platform.startswith("win"):
-            multiprocessing.freeze_support()
+        Storage().init()
 
-        if not app.debug:
-            def open_in_browser():
-                logging.info("Application is starting...")
-                url = "http://127.0.0.1:" + str(port)
+        sockets = socketio.Server()
+        app.wsgi_app = socketio.Middleware(sockets, app.wsgi_app)
+        sockets.register_namespace(Backend())
 
-                while True:
-                    try:
-                        request.urlopen(url=url)
-                        break
-                    except Exception:
-                        time.sleep(0.5)
+        def open_in_browser():
+            logging.info("Application is starting...")
 
-                logging.info("Application is available at " + url)
+            url = "http://127.0.0.1:%s" % port
+            while not url_ok(url):
+                sleep(0.5)
+
+            logging.info("Application is available at " + url)
+
+            if not app.debug and browser:
                 webbrowser.open(url)
 
+        Thread(target=open_in_browser, daemon=True).start()
 
-            threading.Timer(1, open_in_browser).start()
+        app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=False)
 
-        app.run(host="0.0.0.0", port=port, threaded=True)
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except:
+        logging.exception(sys.exc_info()[0])
 
-except (KeyboardInterrupt, SystemExit):
-    raise
-except:
-    logging.exception(sys.exc_info()[0])
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and "fork" in sys.argv[1]:
+        multiprocessing.freeze_support()
+        exit(0)
+
+    if sys.platform.startswith("win"):
+        multiprocessing.freeze_support()
+
+    run()

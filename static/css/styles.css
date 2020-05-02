@@ -5,6 +5,10 @@
     border-color: #ccc;
 }
 
+.navbar-placeholder {
+    height: 71px;
+}
+
 .navbar .top {
     float: left;
 }
