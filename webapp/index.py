@@ -100,7 +100,7 @@ class Index:
         limit = 100
         offset = limit * (page - 1)
         count = self.storage.fetch_measurements_count(name)
-        pages = self.prepare_pages(page, limit, count)
+        pages = self.prepare_pages(name, page, limit, count)
 
         measurements = self.storage.fetch_measurements(name, limit, offset)
 
@@ -113,7 +113,7 @@ class Index:
             pages=pages,
         )
 
-    def prepare_pages(self, page, limit, count, blocks=10):
+    def prepare_pages(self, name, page, limit, count, blocks=10):
         first_page = 1
         related = 3
         last_page = int(ceil(count / limit))
@@ -128,7 +128,7 @@ class Index:
         for number in steps:
             pages.append({
                 "number": number,
-                "link": url_for("index.data", page=number),
+                "link": url_for("index.data", page=number, name=name),
                 "current": number == page,
             })
 
