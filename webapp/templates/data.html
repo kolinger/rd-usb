@@ -50,7 +50,7 @@
 
     {% if pages|length > 1 %}
         <div class="paginator">
-            <ul class="pagination">
+            <ul class="pagination pagination-lg">
                 {% for page in pages %}
                     <li{% if page["current"] %} class="active"{% endif %}>
                         <a href="{{ page["link"] }}">{{ page["number"] }}</a>
