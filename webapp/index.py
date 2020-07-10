@@ -1,5 +1,6 @@
 import csv
 import io
+from math import ceil
 import os
 
 import arrow
@@ -66,8 +67,6 @@ class Index:
         names, selected = self.prepare_selection()
         name = self.storage.translate_selected_name(selected)
 
-        measurements = self.storage.fetch_measurements(name)
-
         if request.args.get("export") == "":
             string = io.StringIO()
             writer = csv.writer(string)
@@ -78,7 +77,7 @@ class Index:
                 names.append(format.field_name(field))
             writer.writerow(names)
 
-            for item in measurements:
+            for item in self.storage.fetch_measurements(name):
                 values = []
                 for field in format.export_fields:
                     if field == "time":
@@ -97,13 +96,43 @@ class Index:
             flash("Measurements with session name '" + name + "' were deleted", "danger")
             return redirect(request.path)
 
+        page = request.args.get("page", 1, int)
+        limit = 100
+        offset = limit * (page - 1)
+        count = self.storage.fetch_measurements_count(name)
+        pages = self.prepare_pages(page, limit, count)
+
+        measurements = self.storage.fetch_measurements(name, limit, offset)
+
         return render_template(
             "data.html",
             names=names,
             selected=selected,
             measurements=measurements,
-            page="data"
+            page="data",
+            pages=pages,
         )
+
+    def prepare_pages(self, page, limit, count, blocks=10):
+        first_page = 1
+        related = 3
+        last_page = int(ceil(count / limit))
+        steps = set(range(max((first_page, page - related)), min((last_page, page + related)) + 1))
+        quotient = (last_page - 1) / blocks
+        for index in range(0, blocks):
+            steps.add(round(quotient * index) + first_page)
+        steps.add(last_page)
+        steps = sorted(steps)
+
+        pages = []
+        for number in steps:
+            pages.append({
+                "number": number,
+                "link": url_for("index.data", page=number),
+                "current": number == page,
+            })
+
+        return pages
 
     def render_graph(self):
         self.init()

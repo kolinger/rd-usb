@@ -104,13 +104,26 @@ class Storage:
 
         return names
 
-    def fetch_measurements(self, name):
+    def fetch_measurements_count(self, name):
+        if not name:
+            return 0
+
+        with self.connect() as sqlite:
+            cursor = sqlite.cursor()
+            cursor.execute("SELECT COUNT(id) AS count FROM measurements WHERE name = ?", (name,))
+            return int(cursor.fetchone()["count"])
+
+    def fetch_measurements(self, name, limit=None, offset=None):
         if not name:
             return []
 
         with self.connect() as sqlite:
             cursor = sqlite.cursor()
-            cursor.execute("SELECT * FROM measurements WHERE name = ? ORDER BY timestamp ASC", (name,))
+            sql = "SELECT * FROM measurements WHERE name = ? ORDER BY timestamp ASC"
+            if limit is None or offset is None:
+                cursor.execute(sql, (name,))
+            else:
+                cursor.execute(sql + " LIMIT ?, ?", (name, offset, limit))
             return cursor.fetchall()
 
     def fetch_last_measurement_by_name(self, name):

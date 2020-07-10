@@ -47,4 +47,16 @@
             </tbody>
         </table>
     </div>
+
+    {% if pages|length > 1 %}
+        <div class="paginator">
+            <ul class="pagination">
+                {% for page in pages %}
+                    <li{% if page["current"] %} class="active"{% endif %}>
+                        <a href="{{ page["link"] }}">{{ page["number"] }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
 {% endblock %}
