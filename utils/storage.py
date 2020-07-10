@@ -149,10 +149,10 @@ class Storage:
 
         return log
 
-    def clean_log(self):
+    def clear_log(self):
         with sqlite3.connect(**self.parameters) as sqlite:
             cursor = sqlite.cursor()
-            cursor.execute("DELETE FROM logs WHERE id NOT IN (SELECT id FROM logs ORDER BY id DESC LIMIT 1000)")
+            cursor.execute("DELETE FROM logs WHERE id NOT IN (SELECT id FROM logs ORDER BY id DESC LIMIT 250)")
 
     def update_status(self, status):
         with sqlite3.connect(**self.parameters) as sqlite:
