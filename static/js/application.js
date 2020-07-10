@@ -208,6 +208,7 @@ ntdrt.application = {
     chart: null,
     left_axis: null,
     right_axis: null,
+    chart_buffer: [],
     current: function () {
         var self = this;
         var current = $('#current');
@@ -221,25 +222,44 @@ ntdrt.application = {
                 });
 
                 if (self.chart) {
-                    try {
-                        var item = {
-                            date: data['graph']['timestamp'],
-                        };
-                        var push = false;
-                        if (self.left_axis && data['graph'].hasOwnProperty(self.left_axis)) {
-                            item['left'] = data['graph'][self.left_axis];
-                            push = true;
-                        }
-                        if (self.right_axis && data['graph'].hasOwnProperty(self.right_axis)) {
-                            item['right'] = data['graph'][self.right_axis];
-                            push = true;
-                        }
-                        if (push) {
-                            self.chart.addData([item]);
-                        }
-                    } catch (e) {
-                        // ignore
+                    self.chart_buffer.push(data);
+
+                    // flush less often for huge datasets to minimize lag
+                    var chart_size = self.chart.data.length;
+                    var buffer_size = self.chart_buffer.length;
+                    if (chart_size > 1000 && buffer_size < 5) {
+                        return;
                     }
+                    if (chart_size > 10000 && buffer_size < 10) {
+                        return;
+                    }
+                    if (chart_size > 100000 && buffer_size < 60) {
+                        return;
+                    }
+
+                    for (var index in self.chart_buffer) {
+                        data = self.chart_buffer[index];
+                        try {
+                            var item = {
+                                date: data['graph']['timestamp'],
+                            };
+                            var push = false;
+                            if (self.left_axis && data['graph'].hasOwnProperty(self.left_axis)) {
+                                item['left'] = data['graph'][self.left_axis];
+                                push = true;
+                            }
+                            if (self.right_axis && data['graph'].hasOwnProperty(self.right_axis)) {
+                                item['right'] = data['graph'][self.right_axis];
+                                push = true;
+                            }
+                            if (push) {
+                                self.chart.addData([item]);
+                            }
+                        } catch (e) {
+                            // ignore
+                        }
+                    }
+                    self.chart_buffer = [];
                 }
             });
         }
