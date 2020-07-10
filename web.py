@@ -1,4 +1,3 @@
-from http.client import HTTPConnection
 import logging
 from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
