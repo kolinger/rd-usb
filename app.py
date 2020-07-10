@@ -12,6 +12,7 @@ import webview
 from webview.platforms.cef import settings
 
 from utils.config import data_path
+from utils.version import version
 from web import run
 
 debug = "FLASK_DEBUG" in os.environ
@@ -98,7 +99,7 @@ if __name__ == "__main__":
         url = "http://%s:%s" % ("127.0.0.1", 5000)
         view = Webview(url)
         view.callback = callback
-        view.title = "RD-USB"
+        view.title = "RD-USB " + version
         view.width = 1250
         view.height = 800
         view.start()
