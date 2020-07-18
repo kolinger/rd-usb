@@ -49,7 +49,9 @@ class Webview:
 
     def __init__(self, url):
         self.url = url
-        self.window_parameters = {}
+        self.window_parameters = {
+            "text_select": True,
+        }
 
     def start(self):
         Thread(target=self.handle_callback, daemon=True).start()
