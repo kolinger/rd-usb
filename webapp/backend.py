@@ -228,8 +228,15 @@ class Daemon:
     def retry(self, callback):
         timeout = time() + 30
         count = 10
+        reconnect = False
         while True:
             try:
+                if reconnect:
+                    self.interface.disconnect()
+                    self.interface.connect()
+                    # noinspection PyUnusedLocal
+                    reconnect = False
+
                 return callback()
             except (KeyboardInterrupt, SystemExit):
                 raise
@@ -241,8 +248,7 @@ class Daemon:
                 else:
                     self.log("operation failed, retrying")
                     self.emit("log", traceback.format_exc())
-                    self.interface.disconnect()
-                    self.interface.connect()
+                    reconnect = True
 
     def emit(self, event, data=None):
         if event == "log":
