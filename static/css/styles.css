@@ -35,9 +35,17 @@
 }
 
 .content .log {
+    overflow: auto;
+}
+
+.content .log pre {
     white-space: pre-wrap;
     word-wrap: break-word;
     margin-bottom: 0;
+
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
 }
 
 .content .data {

@@ -2,6 +2,8 @@ var ntdrt = ntdrt || {};
 
 ntdrt.application = {
 
+    logScrollEnabled: true,
+
     init: function () {
         var self = ntdrt.application;
 
@@ -51,6 +53,21 @@ ntdrt.application = {
             }
             var sep = link.indexOf('?') === -1 ? '?' : '&';
             window.location.href = link + sep + parts.join('&');
+        });
+
+        var logWrapper = $('#log');
+        var previousLogPosition = 0;
+        logWrapper.on('scroll', function () {
+            var position = logWrapper.scrollTop();
+            if (previousLogPosition > position) {
+                self.logScrollEnabled = false;
+            } else if (!self.logScrollEnabled) {
+                var mostBottomPosition = logWrapper.find('pre').outerHeight(true) - logWrapper.height();
+                if (position === mostBottomPosition) {
+                    self.logScrollEnabled = true;
+                }
+            }
+            previousLogPosition = position;
         });
 
         self.connection();
@@ -195,8 +212,10 @@ ntdrt.application = {
         var self = this;
         if ($('#log').length) {
             self.socket.on('log', function (message) {
-                $('#log').append(message);
-                self.logScroll(500);
+                $('#log pre').append(message);
+                if (self.logScrollEnabled) {
+                    self.logScroll(500);
+                }
             });
 
             $(window).on('resize', self.logResize);
