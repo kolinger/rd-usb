@@ -184,11 +184,17 @@ class Daemon:
 
             while self.running:
                 data = self.retry(self.interface.read)
-                self.log(json.dumps(data))
-                if data:
-                    data["name"] = self.config.read("name")
-                    self.update(data)
-                self.storage.store_measurement(data)
+                if isinstance(data, str):
+                    if data == "disconnected":
+                        self.disconnect()
+                        return
+                    raise Exception(data)
+                else:
+                    self.log(json.dumps(data))
+                    if data:
+                        data["name"] = self.config.read("name")
+                        self.update(data)
+                    self.storage.store_measurement(data)
                 sleep(self.config.read("rate"))
 
         except (KeyboardInterrupt, SystemExit):
@@ -198,10 +204,13 @@ class Daemon:
             self.emit("log", traceback.format_exc())
             self.emit("log-error")
         finally:
-            self.interface.disconnect()
-            self.emit("disconnected")
-            self.log("Disconnected")
-            self.thread = None
+            self.disconnect()
+
+    def disconnect(self):
+        self.interface.disconnect()
+        self.emit("disconnected")
+        self.log("Disconnected")
+        self.thread = None
 
     def update(self, data):
         format = Format()
@@ -226,7 +235,7 @@ class Daemon:
         }))
 
     def retry(self, callback):
-        timeout = time() + 30
+        timeout = time() + 60
         count = 10
         reconnect = False
         while True:

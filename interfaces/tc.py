@@ -45,7 +45,7 @@ class TcBleInterface(Interface):
 
     def disconnect(self):
         expiration = time() + self.timeout
-        while self.loop.is_running() and time() <= expiration:
+        while self.loop and self.loop.is_running() and time() <= expiration:
             sleep(0.1)
 
         sleep(1)
