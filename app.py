@@ -11,7 +11,7 @@ from appdirs import user_cache_dir
 import webview
 from webview.platforms.cef import settings
 
-from utils.config import data_path
+from utils.config import data_path, Config
 from utils.version import version
 from web import run
 
@@ -66,11 +66,18 @@ class Webview:
 
         self.window = webview.create_window(html=self.loading_html, **parameters)
         self.window.loaded += self.on_loaded
+        self.window.closing += self.on_close
         webview.start(debug=debug, gui="cef")
 
     def on_loaded(self):
         self.window.loaded -= self.on_loaded
         self.loaded = True
+
+    def on_close(self):
+        config = Config()
+        config.write("window_width", self.window.width, False)
+        config.write("window_height", self.window.height, False)
+        config.flush()
 
     def handle_callback(self):
         if self.callback:
@@ -98,12 +105,17 @@ if __name__ == "__main__":
         def callback():
             run(False)
 
-        url = "http://%s:%s" % ("127.0.0.1", 5000)
+        port = 5000
+        if len(sys.argv) > 1:
+            port = int(sys.argv[1])
+
+        url = "http://%s:%s" % ("127.0.0.1", port)
         view = Webview(url)
         view.callback = callback
         view.title = "RD-USB " + version
-        view.width = 1250
-        view.height = 800
+        config = Config()
+        view.width = config.read("window_width", 1250)
+        view.height = config.read("window_height", 800)
         view.start()
 
 
