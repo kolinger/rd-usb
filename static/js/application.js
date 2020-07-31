@@ -337,7 +337,8 @@ ntdrt.application = {
                                 },
                                 'numberFormatter': {
                                     'type': 'NumberFormatter',
-                                    'numberFormat': '#.00 \' ' + left_unit + '\''
+                                    'numberFormat': '#.00 \' ' + left_unit + '\'',
+                                    'forceCreate': true
                                 },
                                 'tooltip': {
                                     'disabled': true
@@ -353,7 +354,8 @@ ntdrt.application = {
                                 },
                                 'numberFormatter': {
                                     'type': 'NumberFormatter',
-                                    'numberFormat': '#.00 \' ' + right_unit + '\''
+                                    'numberFormat': '#.00 \' ' + right_unit + '\'',
+                                    'forceCreate': true
                                 },
                                 'tooltip': {
                                     'disabled': true
