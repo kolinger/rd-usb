@@ -45,12 +45,13 @@ reputation so Microsoft will block by default.
 4. Run with `python web.py` - this will spawn web server on http://127.0.0.1:5000, port can be changed
 with first argument: `python web.py 5555`
 
+For additional arguments/options use --help: `python web.py --help`.
+
 On Windows `python` can be found in Python's installation folder.
 For example replace `python` with `C:\Python37\python.exe web.py`
 and `pip` with `C:\Python37\python.exe -m pip install -r requirements.txt`.
 
 On Linux use `python3` and `pip3`.
-
 
 Usage
 --

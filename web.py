@@ -1,3 +1,4 @@
+import argparse
 import logging
 from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
@@ -23,14 +24,18 @@ def url_ok(url):
     try:
         request.urlopen(url=url)
         return True
-    except Exception as e:
+    except Exception:
         return False
 
 
 def run(browser=True):
-    port = 5000
-    if len(sys.argv) > 1:
-        port = int(sys.argv[1])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("port", nargs="?", type=int, default=5000, help="Port for web server to listen on")
+    parser.add_argument("--daemon", action="store_true", default=browser, help="Do not launch web browser")
+    args = parser.parse_args()
+
+    port = args.port
+    daemon = args.daemon
 
     app = Flask(__name__, static_folder=static_path)
     app.register_blueprint(Index().register())
@@ -73,7 +78,7 @@ def run(browser=True):
 
             logging.info("Application is available at " + url)
 
-            if not app.debug and browser:
+            if not app.debug and not daemon:
                 webbrowser.open(url)
 
         Thread(target=open_in_browser, daemon=True).start()
