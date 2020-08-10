@@ -119,8 +119,9 @@ class Index:
         last_page = int(ceil(count / limit))
         steps = set(range(max((first_page, page - related)), min((last_page, page + related)) + 1))
         quotient = (last_page - 1) / blocks
-        for index in range(0, blocks):
-            steps.add(round(quotient * index) + first_page)
+        if len(steps) > 1:
+            for index in range(0, blocks):
+                steps.add(round(quotient * index) + first_page)
         steps.add(last_page)
         steps = sorted(steps)
 
