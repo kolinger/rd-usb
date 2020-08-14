@@ -31,7 +31,7 @@ def url_ok(url):
 def run(browser=True):
     parser = argparse.ArgumentParser()
     parser.add_argument("port", nargs="?", type=int, default=5000, help="Port for web server to listen on")
-    parser.add_argument("--daemon", action="store_true", default=browser, help="Do not launch web browser")
+    parser.add_argument("--daemon", action="store_true", default=not browser, help="Do not launch web browser")
     args = parser.parse_args()
 
     port = args.port
