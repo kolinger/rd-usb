@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from time import time, sleep
 
 from Crypto.Cipher import AES
@@ -86,14 +87,18 @@ class TcBleInterface(Interface):
                 self.bound = True
                 await self.client.start_notify(SERVER_TX_DATA, self.response.callback)
 
-            expiration = time() + self.timeout
+            expiration = time() + 5
             while not self.response.is_complete() and time() <= expiration:
                 sleep(0.1)
 
             if not self.response.is_complete():
                 continue
 
-            break
+            try:
+                return self.response.decode()
+            except CorruptedResponseException as e:
+                logging.exception(e)
+                continue
 
         if not self.response.is_complete():
             raise NoResponseException
@@ -101,7 +106,10 @@ class TcBleInterface(Interface):
         return self.response.decode()
 
     def encode_command(self, command):
-        return (command + "\r\n").encode("ascii")
+        string = command + "\r\n"
+        encoded = string.encode("ascii")
+        encoded = bytearray(encoded)
+        return encoded
 
     def get_loop(self):
         if not self.loop:
@@ -146,8 +154,11 @@ class Response:
     index = 0
 
     def append(self, data):
-        self.buffer.extend(data)
-        self.index += len(data)
+        try:
+            self.buffer.extend(data)
+            self.index += len(data)
+        except BufferError:
+            pass
 
     def callback(self, sender, data):
         self.append(data)
@@ -161,7 +172,10 @@ class Response:
             key.append(value & 255)
 
         aes = AES.new(bytes(key), AES.MODE_ECB)
-        return aes.decrypt(self.buffer)
+        try:
+            return aes.decrypt(self.buffer)
+        except ValueError:
+            raise CorruptedResponseException
 
     def decode(self, data=None):
         if data is not None:
@@ -203,4 +217,8 @@ class Response:
 
 
 class NoResponseException(Exception):
+    pass
+
+
+class CorruptedResponseException(Exception):
     pass
