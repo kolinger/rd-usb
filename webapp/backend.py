@@ -169,6 +169,7 @@ class Daemon:
         while self.thread and self.thread.is_alive():
             sleep(0.1)
         self.emit("disconnected")
+        self.thread = None
 
     def run(self):
         self.storage = Storage()
@@ -185,7 +186,7 @@ class Daemon:
             while self.running:
                 data = self.retry(self.interface.read)
                 if isinstance(data, str):
-                    if data == "disconnected":
+                    if data in ["disconnected", "connected"]:
                         self.disconnect()
                         return
                     raise Exception(data)

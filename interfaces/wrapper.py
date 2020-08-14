@@ -39,14 +39,13 @@ class Wrapper(Interface):
         self.command.put("disconnect")
         try:
             self.get_result(10)
-        except TimeoutError as e:
+        except TimeoutError:
             self.process.terminate()
-            raise e
 
     def read(self):
         self.run()
         self.command.put("read")
-        return self.get_result(5)
+        return self.get_result(60)
 
     def get_result(self, timeout):
         timeout = time() + timeout
