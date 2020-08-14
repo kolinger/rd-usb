@@ -197,7 +197,7 @@ ntdrt.application = {
 
             } else if (override.hasOwnProperty('ble_address')) {
                 form.find('[data-serial]').hide();
-                var ble = form.find('[data-serial]');
+                var ble = form.find('[data-ble]');
                 ble.show();
                 ble.find('.setup-link').text(data['ble_address']);
             }
