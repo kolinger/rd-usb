@@ -75,13 +75,14 @@ class Receiver:
         config = Config()
 
         version = config.read("version")
+        serialTimeout = int(config.read("serial_timeout", 10))
         if version.startswith("TC"):
             if version.endswith("USB"):
-                interface = TcSerialInterface(config.read("port"))
+                interface = TcSerialInterface(config.read("port"), serialTimeout)
             else:
                 interface = TcBleInterface(config.read("ble_address"))
         else:
-            interface = UmInterface(config.read("port"))
+            interface = UmInterface(config.read("port"), serialTimeout)
             if version == "UM25C":
                 interface.enable_higher_resolution()
 

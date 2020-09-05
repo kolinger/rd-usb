@@ -23,22 +23,25 @@ class UmInterface(Interface):
         65535: "Unknown"
     }
 
-    def __init__(self, port):
+    def __init__(self, port, timeout):
         self.port = port
+        self.timeout = timeout
 
     def enable_higher_resolution(self):
         self.higher_resolution = True
 
     def connect(self):
         if self.serial is None:
-            self.serial = serial.Serial(port=self.port, baudrate=9600, timeout=3, write_timeout=0)
+            self.serial = serial.Serial(port=self.port, baudrate=9600, timeout=self.timeout, write_timeout=0)
 
     def read(self):
+        self.open()
         self.send("f0")
         data = self.serial.read(130)
         return self.parse(data)
 
     def send(self, value):
+        self.open()
         self.serial.write(bytes.fromhex(value))
 
     def parse(self, data):
@@ -74,6 +77,10 @@ class UmInterface(Interface):
             result["mode_name"] = self.modes[result["mode_id"]]
 
         return result
+
+    def open(self):
+        if not self.serial.isOpen():
+            self.serial.open()
 
     def disconnect(self):
         if self.serial:

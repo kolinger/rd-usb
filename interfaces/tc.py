@@ -120,15 +120,17 @@ class TcBleInterface(Interface):
 class TcSerialInterface(Interface):
     serial = None
 
-    def __init__(self, port):
+    def __init__(self, port, timeout):
         self.port = port
         self.response = Response()
+        self.timeout = timeout
 
     def connect(self):
         if self.serial is None:
-            self.serial = serial.Serial(port=self.port, baudrate=115200, timeout=3, write_timeout=0)
+            self.serial = serial.Serial(port=self.port, baudrate=115200, timeout=self.timeout, write_timeout=0)
 
     def read(self):
+        self.open()
         self.send("getva")
         data = self.serial.read(192)
         self.response.reset()
@@ -136,7 +138,12 @@ class TcSerialInterface(Interface):
         return self.response.decode()
 
     def send(self, value):
+        self.open()
         self.serial.write(value.encode("ascii"))
+
+    def open(self):
+        if not self.serial.isOpen():
+            self.serial.open()
 
     def disconnect(self):
         if self.serial:
