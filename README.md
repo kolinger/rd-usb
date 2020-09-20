@@ -44,6 +44,9 @@ reputation so Microsoft will block by default.
 3. Install requirements 
    - For Windows: `pip install -r requirements.txt`
    - For Linux `pip install -r requirements_linux.txt`
+   - For Linux headless `pip install -r requirements_headless.txt` this version doesn't 
+     contain dependencies for embedded browser GUI. This is useful if you plan to use CLI/webserver only.
+     Also useful on ARM SBCs.
 4. Run with `python web.py` - this will spawn web server on http://127.0.0.1:5000, port can be changed
 with first argument: `python web.py 5555`
 
