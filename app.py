@@ -13,7 +13,7 @@ from webview.platforms.cef import settings
 
 from utils.config import data_path, Config
 from utils.version import version
-from web import run
+from web import run, parse_cli
 
 debug = "FLASK_DEBUG" in os.environ
 
@@ -102,14 +102,12 @@ if __name__ == "__main__":
             multiprocessing.freeze_support()
             exit(0)
 
+        args = parse_cli(open_browser=False)
+
         def callback():
-            run(False)
+            run(args)
 
-        port = 5000
-        if len(sys.argv) > 1:
-            port = int(sys.argv[1])
-
-        url = "http://%s:%s" % ("127.0.0.1", port)
+        url = "http://%s:%s" % ("127.0.0.1", args.port)
         view = Webview(url)
         view.callback = callback
         view.title = "RD-USB " + version

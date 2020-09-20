@@ -28,11 +28,18 @@ def url_ok(url):
         return False
 
 
-def run(browser=True):
+def parse_cli(open_browser=True):
     parser = argparse.ArgumentParser()
     parser.add_argument("port", nargs="?", type=int, default=5000, help="Port for web server to listen on")
-    parser.add_argument("--daemon", action="store_true", default=not browser, help="Do not launch web browser")
-    args = parser.parse_args()
+    parser.add_argument("--daemon", action="store_true", default=not open_browser, help="Do not launch web browser")
+    parser.add_argument("--on-receive", help="Call this program/script when new measurements are received")
+    parser.add_argument("--on-receive-interval", type=int, default=60, help="Interval for --on-receive (in seconds)")
+    return parser.parse_args()
+
+
+def run(args=None):
+    if not args:
+        args = parse_cli()
 
     port = args.port
     daemon = args.daemon
@@ -67,7 +74,7 @@ def run(browser=True):
 
         sockets = socketio.Server(async_mode="threading")
         app.wsgi_app = socketio.Middleware(sockets, app.wsgi_app)
-        sockets.register_namespace(Backend())
+        sockets.register_namespace(Backend(args.on_receive, args.on_receive_interval))
 
         def open_in_browser():
             logging.info("Application is starting...")

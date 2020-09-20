@@ -3,4 +3,6 @@
 /config.json
 /data.db
 /*.log
+/on-receive.output
+/on-receive*.json
 *.pyc

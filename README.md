@@ -78,7 +78,6 @@ Usage
 
 ![setup](screenshots/setup.png)
 
-
 Graphs
 --
 
@@ -90,6 +89,47 @@ Tables
 
 ![tables](screenshots/tables.png)
 
+Custom export
+--
+
+Application has basic CSV export built-in. For more advanced use-cases external script can be used.
+
+External program/script can be specified with `--on-receive` option.
+This script will be executed when new data is received. 
+New measurements are provided as JSON file. Path of this file is provided as first argument.
+
+For managing overhead another option `--on-receive-interval` is available (default value is 60).
+This number specified how often is external script called (in seconds, default value is every minute).
+Value 0 means script will be called for every new measurement as they happen. 
+Script is not called when no new measurements are available.
+
+CLI example: `python web.py --on-receive on-receive.sh`
+
+See `on-receive.sh` or `on-receive.cmd` files for more information how implement this program/script.
+
+Example structure of JSON file:
+
+```
+[
+    {
+        "timestamp": 1599556295,
+        "voltage": 5.12,
+        "current": 0.0,
+        "power": 0.0,
+        "temperature": 25,
+        "data_plus": 0.0,
+        "data_minus": 0.0,
+        "mode_id": 7,
+        "mode_name": "DCP1.5A",
+        "accumulated_current": 0,
+        "accumulated_power": 0,
+        "accumulated_time": 0,
+        "resistance": 9999.9,
+        "name": "measurement name"
+    },
+    ...
+]
+```
 
 Development
 --

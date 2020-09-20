@@ -1,7 +1,10 @@
 import asyncio
 import json
 import logging
+import os
 import re
+import shlex
+import subprocess
 import sys
 from threading import Thread
 from time import time, sleep
@@ -21,9 +24,9 @@ from utils.storage import Storage
 class Backend(Namespace):
     config = None
 
-    def __init__(self):
+    def __init__(self, on_receive, on_receive_interval):
         super().__init__()
-        self.daemon = Daemon(self)
+        self.daemon = Daemon(self, on_receive, on_receive_interval)
 
     def init(self):
         self.config = Config()
@@ -146,9 +149,13 @@ class Daemon:
     storage = None
     config = None
     interface = None
+    buffer = None
+    buffer_expiration = None
 
-    def __init__(self, backend):
+    def __init__(self, backend, on_receive, on_receive_interval):
         self.backed = backend
+        self.on_receive = on_receive
+        self.on_receive_interval = on_receive_interval
         self.storage = Storage()
         if self.storage.fetch_status() != "disconnected":
             self.storage.update_status("disconnected")
@@ -229,6 +236,29 @@ class Daemon:
             else:
                 value = data[name]
             graph[name] = value
+
+        if self.on_receive:
+            if not self.buffer:
+                self.buffer = []
+
+            data["timestamp"] = int(data["timestamp"])
+            self.buffer.append(data)
+
+            execute = True
+            if self.on_receive_interval:
+                execute = False
+                if not self.buffer_expiration or self.buffer_expiration <= time():
+                    execute = True
+                    self.buffer_expiration = time() + self.on_receive_interval
+
+            if execute:
+                payload = json.dumps(self.buffer)
+                self.buffer = None
+                payload_file = os.path.join(os.getcwd(), "on-receive-payload-%s.json") % time()
+                with open(payload_file, "w") as file:
+                    file.write(payload)
+                command = self.on_receive + " \"" + payload_file + "\""
+                subprocess.Popen(command, shell=True, env={})
 
         self.emit("update", json.dumps({
             "table": table,
