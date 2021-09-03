@@ -151,6 +151,7 @@ class Index:
             item=last_measurement,
             left_axis="voltage",
             right_axis="current",
+            colors=self.config.read("colors", "colorful"),
             page="graph"
         )
 
@@ -162,6 +163,9 @@ class Index:
 
         left_axis = request.args.get("left_axis")
         right_axis = request.args.get("right_axis")
+        colors = request.args.get("colors")
+        if self.config.read("colors") != colors:
+            self.config.write("colors", colors, flush=True)
 
         format = Format()
 

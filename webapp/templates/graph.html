@@ -50,7 +50,7 @@
     <div class="graph-data">
         <form class="form-inline" id="graph-settings">
             <div class="form-group">
-                <label for="name">Left axis</label>
+                <label for="left_axis">Left axis</label>
                 <select class="form-control" name="left_axis">
                     <option value="voltage" selected>Voltage (V)</option>
                     <option value="current">Current (A)</option>
@@ -62,7 +62,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="name">Right axis</label>
+                <label for="right_axis">Right axis</label>
                 <select class="form-control" name="right_axis">
                     <option value="voltage">Voltage (V)</option>
                     <option value="current" selected>Current (A)</option>
@@ -73,12 +73,19 @@
                     <option value="resistance">Resistance (Ω)</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label for="colors">Colors</label>
+                <select class="form-control" name="colors">
+                    <option value="colorful"{% if colors == "colorful" %} selected{% endif %}>Colorful</option>
+                    <option value="contrast"{% if colors == "contrast" %} selected{% endif %}>Better contrast</option>
+                </select>
+            </div>
             <button type="submit" class="btn btn-default">Apply</button>
         </form>
 
         <div class="graph">
             <div class="loading">Loading... Please wait...</div>
-            <div data-url="{{ url_for("index.graph_data") }}" id="graph"></div>
+            <div data-url="{{ url_for("index.graph_data") }}" id="graph" data-colors="{{ colors }}"></div>
         </div>
     </div>
 {% endblock %}

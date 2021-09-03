@@ -303,6 +303,28 @@ ntdrt.application = {
                 var right_axis = self.right_axis = $('select[name="right_axis"]').val();
                 var right_name = $('#graph-settings option[value="' + right_axis + '"]').first().text();
 
+                var colorsMode = $('select[name="colors"]').val();
+
+                var left_color;
+                var right_color;
+                if (colorsMode === 'colorful') {
+                    var colors = {
+                        'voltage': '#0080ff',
+                        'current': '#e50000',
+                        'power': '#eabe24',
+                        'temperature': '#417200',
+                        'accumulated_current': '#a824ea',
+                        'accumulated_power': '#014d98',
+                        'resistance': '#6cc972',
+                        'fallback': '#373737'
+                    };
+                    left_color = colors.hasOwnProperty(left_axis) ? colors[left_axis] : colors['fallback'];
+                    right_color = colors.hasOwnProperty(right_axis) ? colors[right_axis] : colors['fallback'];
+                } else {
+                    left_color = '#0080ff';
+                    right_color = '#e50000';
+                }
+
                 var unit = function (name) {
                     var matches = name.match(/\(([^)]+)\)/i);
                     if (matches) {
@@ -317,9 +339,10 @@ ntdrt.application = {
                 url += '?name=' + name;
                 url += '&left_axis=' + left_axis;
                 url += '&right_axis=' + right_axis;
+                url += '&colors=' + colorsMode;
 
                 $.get(url, function (data) {
-                    self.chart = chart = am4core.createFromConfig({
+                    var config = {
                         'data': data,
                         'xAxes': [{
                             'type': 'DateAxis',
@@ -332,8 +355,9 @@ ntdrt.application = {
                                 'id': 'leftAxis',
                                 'type': 'ValueAxis',
                                 'title': {
-                                    'fill': 'rgb(229, 0, 0)',
+                                    'fill': left_color,
                                     'text': left_name,
+                                    'fontWeight': 'bold'
                                 },
                                 'numberFormatter': {
                                     'type': 'NumberFormatter',
@@ -341,7 +365,13 @@ ntdrt.application = {
                                     'forceCreate': true
                                 },
                                 'tooltip': {
-                                    'disabled': true
+                                    'disabled': true,
+                                },
+                                'renderer': {
+                                    'labels': {
+                                        'fill': left_color,
+                                        'fontWeight': 'bold',
+                                    }
                                 },
                                 'min': 0
                             },
@@ -349,8 +379,9 @@ ntdrt.application = {
                                 'id': 'rightAxis',
                                 'type': 'ValueAxis',
                                 'title': {
-                                    'fill': 'rgb(0, 128, 255)',
+                                    'fill': right_color,
                                     'text': right_name,
+                                    'fontWeight': 'bold'
                                 },
                                 'numberFormatter': {
                                     'type': 'NumberFormatter',
@@ -361,7 +392,11 @@ ntdrt.application = {
                                     'disabled': true
                                 },
                                 'renderer': {
-                                    'opposite': true
+                                    'opposite': true,
+                                    'labels': {
+                                        'fill': right_color,
+                                        'fontWeight': 'bold'
+                                    }
                                 },
                                 'min': 0
                             }
@@ -370,7 +405,7 @@ ntdrt.application = {
                             {
                                 'id': 'left',
                                 'type': 'LineSeries',
-                                'stroke': 'rgb(229, 0, 0)',
+                                'stroke': left_color,
                                 'strokeWidth': 2,
                                 'dataFields': {
                                     'dateX': 'date',
@@ -380,7 +415,7 @@ ntdrt.application = {
                                 'tooltip': {
                                     'getFillFromObject': false,
                                     'background': {
-                                        'fill': 'rgb(229, 0, 0)',
+                                        'fill': left_color,
                                     },
                                     'label': {
                                         'fill': '#fff'
@@ -390,7 +425,7 @@ ntdrt.application = {
                             {
                                 'id': 'right',
                                 'type': 'LineSeries',
-                                'stroke': 'rgb(0, 128, 255)',
+                                'stroke': right_color,
                                 'strokeWidth': 2,
                                 'dataFields': {
                                     'dateX': 'date',
@@ -401,7 +436,7 @@ ntdrt.application = {
                                 'tooltip': {
                                     'getFillFromObject': false,
                                     'background': {
-                                        'fill': 'rgb(0, 128, 255)',
+                                        'fill': right_color,
                                     },
                                     'label': {
                                         'fill': '#fff'
@@ -412,7 +447,8 @@ ntdrt.application = {
                         'cursor': {
                             'type': 'XYCursor'
                         },
-                    }, graph[0], 'XYChart');
+                    };
+                    self.chart = chart = am4core.createFromConfig(config, graph[0], 'XYChart');
 
                     chart.events.on('ready', function () {
                         graph.parent().find('.loading').hide();
