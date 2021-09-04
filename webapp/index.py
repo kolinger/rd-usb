@@ -1,6 +1,6 @@
 import csv
 import io
-from math import ceil
+from math import ceil, floor
 import os
 
 import arrow
@@ -77,11 +77,36 @@ class Index:
                 names.append(format.field_name(field))
             writer.writerow(names)
 
+            run_time_offset = None
             for item in self.storage.fetch_measurements(name):
+                if run_time_offset is None and item["resistance"] < 9999.9:
+                    run_time_offset = item["timestamp"]
+
+                rune_time = 0
+                if run_time_offset is not None:
+                    rune_time = round(item["timestamp"] - run_time_offset)
+
                 values = []
                 for field in format.export_fields:
                     if field == "time":
                         values.append(format.time(item))
+                    elif field == "run_time":
+                        remaining = rune_time
+                        hours = floor(remaining / 3600)
+                        remaining -= hours * 3600
+                        minutes = floor(remaining / 60)
+                        remaining -= minutes * 60
+                        seconds = remaining
+                        parts = [
+                            hours,
+                            minutes,
+                            seconds,
+                        ]
+                        for index, value in enumerate(parts):
+                            parts[index] = str(value).zfill(2)
+                        values.append(":".join(parts))
+                    elif field == "run_time_seconds":
+                        values.append(rune_time)
                     else:
                         values.append(item[field])
                 writer.writerow(values)

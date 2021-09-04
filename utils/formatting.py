@@ -12,7 +12,7 @@ class Format:
     ]
     export_fields = [
         "time", "voltage", "current", "power", "temperature", "data_plus", "data_minus", "resistance",
-        "accumulated_current", "accumulated_power", "accumulated_time",
+        "accumulated_current", "accumulated_power", "accumulated_time", "run_time", "run_time_seconds", "timestamp",
     ]
     field_names = {
         "time": "Time",
@@ -26,6 +26,9 @@ class Format:
         "accumulated_current": "Accumulated current (mAh)",
         "accumulated_power": "Accumulated power (mWh)",
         "accumulated_time": "Accumulated time (seconds)",
+        "run_time": "Run time",
+        "run_time_seconds": "Run time (seconds)",
+        "timestamp": "Unix time",
     }
 
     def __init__(self):
