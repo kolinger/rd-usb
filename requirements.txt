@@ -1,13 +1,12 @@
-Flask==1.1.1
 Arrow==0.14.4
-pyserial==3.4
-python-socketio==4.3.0
-python-engineio==3.9.0
-appdirs==1.4.3
+Flask~=2.0.1
+pyserial~=3.5
+python-socketio~=5.4.0
+python-engineio~=4.2.1
+appdirs~=1.4.4
 
-bleak==0.4.0
-pycryptodome==3.8.2
 bleak~=0.12.1
+pycryptodome~=3.9.0
 
-pywebview~=3.2
+pywebview~=3.5
 cefpython3~=66.0
