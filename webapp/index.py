@@ -3,10 +3,10 @@ import io
 from math import ceil, floor
 import os
 
-import arrow
 from flask import url_for, request, jsonify, redirect, flash, make_response
 from flask.blueprints import Blueprint
 from flask.templating import render_template
+import pendulum
 
 from utils.config import Config, static_path
 from utils.formatting import Format
@@ -44,7 +44,7 @@ class Index:
             "version": self.config.read("version", "UM34C"),
             "port": self.config.read("port", ""),
             "rate": str(self.config.read("rate", 1.0)),
-            "name": self.config.read("name", arrow.now().format("YYYY-MM-DD")),
+            "name": self.config.read("name", pendulum.now().format("YYYY-MM-DD")),
             "ble_address": self.config.read("ble_address"),
         }
 

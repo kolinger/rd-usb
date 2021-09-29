@@ -1,5 +1,4 @@
-import arrow
-from dateutil import tz
+import pendulum
 
 from utils.usb import decode_usb_data_lines
 
@@ -35,8 +34,8 @@ class Format:
         pass
 
     def time(self, data):
-        time = arrow.get(data["timestamp"])
-        time = time.replace(tzinfo=tz.gettz("UTC")).to("local")
+        time = pendulum.from_timestamp(data["timestamp"])
+        time = time.in_tz("local")
         return time.format("YYYY-MM-DD HH:mm:ss")
 
     def timestamp(self, data):

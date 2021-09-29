@@ -3,14 +3,13 @@ import json
 import logging
 import os
 import re
-import shlex
 import subprocess
 import sys
 from threading import Thread
 from time import time, sleep
 import traceback
 
-import arrow
+import pendulum
 from serial.tools.list_ports import comports
 from socketio import Namespace
 
@@ -52,7 +51,7 @@ class Backend(Namespace):
                 match = re.match(".+( [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2})$", data["name"])
                 if match:
                     data["name"] = data["name"][:-len(match.group(1))]
-                data["name"] += " " + arrow.now().format("YYYY-MM-DD HH:mm")
+                data["name"] += " " + pendulum.now().format("YYYY-MM-DD HH:mm")
         self.config.write("name", data["name"])
 
         try:
@@ -298,5 +297,5 @@ class Daemon:
         self.backed.emit(event, data)
 
     def log(self, message):
-        prefix = arrow.now().format("YYYY-MM-DD HH:mm:ss") + " - "
+        prefix = pendulum.now().format("YYYY-MM-DD HH:mm:ss") + " - "
         self.emit("log", prefix + message + "\n")
