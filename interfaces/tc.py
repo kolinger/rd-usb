@@ -81,7 +81,7 @@ class TcBleInterface(Interface):
         self.response.reset()
 
         for retry in range(0, 3):
-            await self.client.write_gatt_char(SERVER_RX_DATA, self.encode_command(ASK_FOR_VALUES_COMMAND))
+            await self.client.write_gatt_char(SERVER_RX_DATA, self.encode_command(ASK_FOR_VALUES_COMMAND), True)
 
             if not self.bound:
                 self.bound = True
@@ -89,7 +89,7 @@ class TcBleInterface(Interface):
 
             expiration = time() + 5
             while not self.response.is_complete() and time() <= expiration:
-                sleep(0.1)
+                await asyncio.sleep(0.1)
 
             if not self.response.is_complete():
                 continue
