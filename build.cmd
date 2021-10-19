@@ -1,5 +1,7 @@
 @echo off
 
+rmdir /s /q .\dist\rd-usb
+
 pyinstaller --noconfirm pyinstaller-cli.spec || goto :error
 
 pyinstaller --noconfirm pyinstaller.spec || goto :error

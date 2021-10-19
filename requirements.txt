@@ -9,4 +9,6 @@ bleak~=0.12.1
 pycryptodome~=3.9.0
 
 pywebview~=3.5
-cefpython3~=66.0
+cefpython3==66.0
+
+# don't forget pip install -U pyinstaller on upgrade
