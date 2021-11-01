@@ -234,6 +234,8 @@ class Daemon:
                 value = callback(data)
             else:
                 value = data[name]
+            if name == "current":
+                graph["current-m"] = round(value * 1000)
             graph[name] = value
 
         if self.on_receive:
