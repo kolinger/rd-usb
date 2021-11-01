@@ -124,7 +124,11 @@ class Storage:
                 cursor.execute(sql, (name,))
             else:
                 cursor.execute(sql + " LIMIT ?, ?", (name, offset, limit))
-            return cursor.fetchall()
+            items = cursor.fetchall()
+
+        for item in items:
+            item["current-m"] = round(item["current"] * 1000)
+        return items
 
     def fetch_last_measurement_by_name(self, name):
         with self.connect() as sqlite:

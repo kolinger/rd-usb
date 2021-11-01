@@ -311,6 +311,7 @@ ntdrt.application = {
                     var colors = {
                         'voltage': '#0080ff',
                         'current': '#e50000',
+                        'current-m': '#e50000',
                         'power': '#eabe24',
                         'temperature': '#417200',
                         'accumulated_current': '#a824ea',
@@ -361,7 +362,7 @@ ntdrt.application = {
                                 },
                                 'numberFormatter': {
                                     'type': 'NumberFormatter',
-                                    'numberFormat': '#.00 \' ' + left_unit + '\'',
+                                    'numberFormat': '#,###.## \' ' + left_unit + '\'',
                                     'forceCreate': true
                                 },
                                 'tooltip': {
@@ -385,7 +386,7 @@ ntdrt.application = {
                                 },
                                 'numberFormatter': {
                                     'type': 'NumberFormatter',
-                                    'numberFormat': '#.00 \' ' + right_unit + '\'',
+                                    'numberFormat': '#,###.## \' ' + right_unit + '\'',
                                     'forceCreate': true
                                 },
                                 'tooltip': {
@@ -447,8 +448,13 @@ ntdrt.application = {
                         'cursor': {
                             'type': 'XYCursor'
                         },
+                        'numberFormatter': {
+                            'numberFormat': '#,###.####'
+                        }
                     };
                     self.chart = chart = am4core.createFromConfig(config, graph[0], 'XYChart');
+
+                    self.chart.language.locale['_thousandSeparator'] = '';
 
                     chart.events.on('ready', function () {
                         graph.parent().find('.loading').hide();
