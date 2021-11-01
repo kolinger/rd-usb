@@ -1,6 +1,7 @@
 import sqlite3
 
 from utils.config import data_path
+from utils.converter import Converter
 
 
 class Storage:
@@ -11,6 +12,7 @@ class Storage:
             "database": data_path + "/data.db",
             "isolation_level": None,
         }
+        self.converter = Converter()
 
     def connect(self):
         connection = sqlite3.connect(**self.parameters)
@@ -126,8 +128,9 @@ class Storage:
                 cursor.execute(sql + " LIMIT ?, ?", (name, offset, limit))
             items = cursor.fetchall()
 
-        for item in items:
-            item["current-m"] = round(item["current"] * 1000)
+        for index, item in enumerate(items):
+            items[index] = self.converter.convert(item)
+
         return items
 
     def fetch_last_measurement_by_name(self, name):

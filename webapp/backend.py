@@ -16,6 +16,7 @@ from socketio import Namespace
 from interfaces.tc import TcBleInterface
 from interfaces.wrapper import Wrapper
 from utils.config import Config
+from utils.converter import Converter
 from utils.formatting import Format
 from utils.storage import Storage
 
@@ -159,6 +160,7 @@ class Daemon:
         if self.storage.fetch_status() != "disconnected":
             self.storage.update_status("disconnected")
         self.loop = asyncio.new_event_loop()
+        self.converter = Converter()
 
     def start(self):
         self.running = True
@@ -234,9 +236,9 @@ class Daemon:
                 value = callback(data)
             else:
                 value = data[name]
-            if name == "current":
-                graph["current-m"] = round(value * 1000)
             graph[name] = value
+
+        graph = self.converter.convert(graph)
 
         if self.on_receive:
             if not self.buffer:
