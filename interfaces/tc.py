@@ -5,12 +5,16 @@ from time import time, sleep
 
 from Crypto.Cipher import AES
 try:
-    from bleak import BleakClient
+    from bleak import BleakClient, BleakError
     from bleak import discover
     supported = True
-except ImportError:
-    print("WARNING: TC66C over BLE is NOT SUPPORTED", file=sys.stderr)
-    supported = False
+except BleakError as e:
+    message = str(e)
+    if "Only Windows 10 is supported" in message or "Requires at least Windows 10" in message:
+        unsupported_reason = message
+        supported = False
+    else:
+        raise
 import serial
 
 from interfaces.interface import Interface
@@ -48,7 +52,7 @@ class TcBleInterface(Interface):
 
     async def _connect_run(self, address):
         if not supported:
-            raise NotSupportedException("TC66C over BLE is NOT SUPPORTED, reason: bleak BLE library is missing")
+            raise NotSupportedException("TC66C over BLE is NOT SUPPORTED, reason: %s" % unsupported_reason)
         self.client = BleakClient(address, loop=self.get_loop())
         await self.client.connect()
 
