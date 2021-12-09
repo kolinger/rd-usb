@@ -1,14 +1,14 @@
 import asyncio
 import logging
-import sys
 from time import time, sleep
 
 from Crypto.Cipher import AES
+
 try:
-    from bleak import BleakClient, BleakError
+    from bleak import BleakClient
     from bleak import discover
     supported = True
-except BleakError as e:
+except Exception as e:
     message = str(e)
     if "Only Windows 10 is supported" in message or "Requires at least Windows 10" in message:
         unsupported_reason = message
