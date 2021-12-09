@@ -1,10 +1,16 @@
 import asyncio
 import logging
+import sys
 from time import time, sleep
 
 from Crypto.Cipher import AES
-from bleak import BleakClient
-from bleak import discover
+try:
+    from bleak import BleakClient
+    from bleak import discover
+    supported = True
+except ImportError:
+    print("WARNING: TC66C over BLE is NOT SUPPORTED", file=sys.stderr)
+    supported = False
 import serial
 
 from interfaces.interface import Interface
@@ -41,6 +47,8 @@ class TcBleInterface(Interface):
         self.get_loop().run_until_complete(self._connect_run(self.address))
 
     async def _connect_run(self, address):
+        if not supported:
+            raise NotSupportedException("TC66C over BLE is NOT SUPPORTED, reason: bleak BLE library is missing")
         self.client = BleakClient(address, loop=self.get_loop())
         await self.client.connect()
 
@@ -228,4 +236,8 @@ class NoResponseException(Exception):
 
 
 class CorruptedResponseException(Exception):
+    pass
+
+
+class NotSupportedException(Exception):
     pass
