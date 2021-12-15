@@ -57,7 +57,7 @@ class Format:
         return "+" + str(data["data_plus"]) + " / -" + str(data["data_minus"]) + " V"
 
     def mode(self, data):
-        if data["mode_id"] is None:
+        if data["mode_id"] is None and data["data_plus"] is not None:
             return decode_usb_data_lines(data["data_plus"], data["data_minus"])
         if data["mode_name"]:
             return data["mode_name"]

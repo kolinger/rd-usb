@@ -64,7 +64,7 @@ class Storage:
                     "mode_id INTEGER,"
                     "mode_name TEXT,"
                     "accumulated_current INTEGER,"
-                    "accumulated_power integer,"
+                    "accumulated_power INTEGER,"
                     "accumulated_time INTEGER,"
                     "resistance REAL"
                     ")"

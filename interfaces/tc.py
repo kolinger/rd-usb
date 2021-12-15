@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import struct
 from time import time, sleep
 
 from Crypto.Cipher import AES
@@ -148,6 +149,28 @@ class TcSerialInterface(Interface):
         self.response.reset()
         self.response.callback(None, data)
         return self.response.decode()
+
+    def read_records(self):
+        self.send("gtrec")
+
+        results = []
+        buffer = bytearray()
+        while True:
+            chunk = self.serial.read(8)
+            if len(chunk) == 0:
+                break
+
+            buffer.extend(chunk)
+            if len(buffer) >= 8:
+                record = struct.unpack("<2I", buffer[0:8])
+                buffer = buffer[8:]
+
+                results.append({
+                    "voltage": float(record[0]) / 1000 / 10,
+                    "current": float(record[1]) / 1000 / 100,
+                })
+
+        return results
 
     def send(self, value):
         self.open()

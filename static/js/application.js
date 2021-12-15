@@ -55,6 +55,14 @@ ntdrt.application = {
             window.location.href = link + sep + parts.join('&');
         });
 
+        $(document).on('click', 'button[data-import]', function () {
+            var control = $(this);
+            setTimeout(function () {
+                control.prop('disabled', true);
+                control.text('Importing...');
+            }, 0);
+        });
+
         var logWrapper = $('#log');
         var previousLogPosition = 0;
         logWrapper.on('scroll', function () {

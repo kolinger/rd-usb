@@ -2,12 +2,15 @@ import csv
 import io
 from math import ceil, floor
 import os
+from time import time
+import traceback
 
 from flask import url_for, request, jsonify, redirect, flash, make_response
 from flask.blueprints import Blueprint
 from flask.templating import render_template
 import pendulum
 
+from interfaces.tc import TcSerialInterface, TcBleInterface
 from utils.config import Config, static_path
 from utils.formatting import Format
 from utils.storage import Storage
@@ -17,9 +20,7 @@ from utils.version import version
 class Index:
     config = None
     storage = None
-
-    def __init__(self):
-        pass
+    import_in_progress = False
 
     def register(self):
         blueprint = Blueprint("index", __name__, template_folder="templates")
@@ -29,6 +30,7 @@ class Index:
         blueprint.add_url_rule("/graph.json", "graph_data", self.render_graph_data)
         blueprint.add_url_rule("/ble", "ble", self.render_ble)
         blueprint.add_url_rule("/serial", "serial", self.render_serial)
+        blueprint.add_url_rule("/tc66c-import", "tc66c_import", self.render_tc66c_import, methods=["GET", "POST"])
         blueprint.context_processor(self.fill)
         return blueprint
 
@@ -239,6 +241,75 @@ class Index:
         return render_template(
             "serial.html"
         )
+
+    def render_tc66c_import(self):
+        self.init()
+        self.fill_config_from_parameters()
+
+        message = None
+        if self.config.read("version") not in ["TC66C-USB"]:
+            message = "Available only for TC66C USB"
+        elif self.storage.fetch_status() != "disconnected":
+            message = "Disconnect first"
+
+        if "do" in request.form:
+            if message is None:
+                name = request.form.get("session_name")
+                if not name:
+                    message = "Please provide session name"
+                else:
+                    message = self.do_tc66c_import(name)
+                    if message is None:
+                        return redirect(url_for("index.graph"))
+
+        return render_template(
+            "tc66c-import.html",
+            message=message,
+            session_name="TC66C recording %s" % pendulum.now().format("YYYY-MM-DD hh:mm:ss")
+        )
+
+    def do_tc66c_import(self, name):
+        message = None
+        if self.import_in_progress:
+            return "Import is already running"
+        self.import_in_progress = True
+        serial_timeout = int(self.config.read("serial_timeout", 10))
+        interface = TcSerialInterface(self.config.read("port"), serial_timeout)
+        self.storage.fetch_status()
+        try:
+            interface.connect()
+            begin = time()
+            for index, record in enumerate(interface.read_records()):
+                data = {
+                    "name": name,
+                    "timestamp": begin + index,
+                    "voltage": record["voltage"],
+                    "current": record["current"],
+                    "power": 0,
+                    "temperature": 0,
+                    "data_plus": 0,
+                    "data_minus": 0,
+                    "mode_id": 0,
+                    "mode_name": None,
+                    "accumulated_current": 0,
+                    "accumulated_power": 0,
+                    "accumulated_time": 0,
+                    "resistance": 0,
+                }
+                self.storage.store_measurement(data)
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            message = "Failed to connect:"
+            exception = traceback.format_exc()
+            self.storage.log(exception)
+            message += "\n%s" % exception
+        finally:
+            interface.disconnect()
+            self.import_in_progress = False
+
+        return message
 
     def url_for(self, endpoint, **values):
         if endpoint == "static":
