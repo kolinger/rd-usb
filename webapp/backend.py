@@ -12,7 +12,7 @@ import traceback
 import pendulum
 from serial.tools.list_ports import comports
 from socketio import Namespace
-
+from timeit import default_timer as timer
 from interfaces.tc import TcBleInterface
 from interfaces.wrapper import Wrapper
 from utils.config import Config
@@ -191,8 +191,11 @@ class Daemon:
             self.emit("connected")
             self.log("Connected")
 
+            interval = float(self.config.read("rate"))
             while self.running:
+                begin = timer()
                 data = self.retry(self.interface.read)
+
                 if isinstance(data, str):
                     if data in ["disconnected", "connected"]:
                         self.disconnect()
@@ -204,7 +207,11 @@ class Daemon:
                         data["name"] = self.config.read("name")
                         self.update(data)
                     self.storage.store_measurement(data)
-                sleep(self.config.read("rate"))
+
+                measurement_runtime = timer() - begin
+                sleep_time = interval - measurement_runtime
+                if sleep_time > 0:
+                    sleep(sleep_time)
 
         except (KeyboardInterrupt, SystemExit):
             raise
