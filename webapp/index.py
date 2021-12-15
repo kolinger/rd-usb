@@ -119,6 +119,9 @@ class Index:
             return output
 
         elif request.args.get("destroy") == "":
+            if selected == "":
+                flash("Please select session first", "info")
+                return redirect(request.path)
             self.storage.destroy_measurements(name)
             flash("Measurements with session name '" + name + "' were deleted", "danger")
             return redirect(request.path)
