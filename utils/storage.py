@@ -145,6 +145,20 @@ class Storage:
             cursor.execute("SELECT * FROM measurements ORDER BY timestamp DESC LIMIT 1")
             return cursor.fetchone()
 
+    def clear_nonsense_measurement_names(self, names):
+        clear = False
+        if "" in names:
+            names.remove("")
+            clear = True
+        if None in names:
+            names.remove(None)
+            clear = True
+        if clear:
+            with sqlite3.connect(**self.parameters) as sqlite:
+                cursor = sqlite.cursor()
+                cursor.execute("DELETE FROM measurements WHERE name = '' OR name IS NULL")
+        return names
+
     def translate_selected_name(self, selected):
         if selected == "":
             last = self.fetch_last_measurement()

@@ -209,6 +209,7 @@ class Index:
 
     def prepare_selection(self):
         names = self.storage.fetch_measurement_names()
+        names = self.storage.clear_nonsense_measurement_names(names)
         selected = request.args.get("name")
         if not selected:
             selected = ""

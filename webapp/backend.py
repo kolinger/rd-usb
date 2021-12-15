@@ -53,6 +53,10 @@ class Backend(Namespace):
                 if match:
                     data["name"] = data["name"][:-len(match.group(1))]
                 data["name"] += " " + pendulum.now().format("YYYY-MM-DD HH:mm")
+
+        if not data["name"]:
+            data["name"] = "%s %s" % (self.config.read("version"), pendulum.now().format("YYYY-MM-DD hh:mm:ss"))
+
         self.config.write("name", data["name"])
 
         try:
@@ -191,6 +195,7 @@ class Daemon:
             self.emit("connected")
             self.log("Connected")
 
+            name = self.config.read("name")
             interval = float(self.config.read("rate"))
             while self.running:
                 begin = timer()
@@ -204,7 +209,7 @@ class Daemon:
                 else:
                     self.log(json.dumps(data))
                     if data:
-                        data["name"] = self.config.read("name")
+                        data["name"] = name
                         self.update(data)
                     self.storage.store_measurement(data)
 
