@@ -7,15 +7,24 @@
         disconnect and use import functionality.
     </div>
 
-    {% if message %}
+    {% for message in messages %}
         <div class="alert alert-danger">{{ message }}</div>
-    {% endif %}
+    {% endfor %}
 
     <div class="form-inline">
         <form action="" method="post">
             <div class="form-group">
-                <label class="control-label">Session name</label>
-                <input type="text" class="form-control" name="session_name" value="{{ session_name }}" />
+                <label class="control-label" for="session_name">Session name</label>
+                <input type="text" class="form-control" name="session_name" id="session_name" value="{{ session_name }}" />
+            </div>
+            <div class="form-group">
+                <label class="control-label" for="period">Period (s)</label>
+                <input type="number" class="form-control" name="period" id="period" value="{{ period }}"
+                       min="1" max="60" style="width:70px" />
+            </div>
+            <div class="form-group">
+                <label class="control-label" for="calculate">Calculate W/mAh/mWh/Ω *</label>
+                <input type="checkbox" name="calculate" id="calculate" {% if calculate %}checked {% endif %}/>
             </div>
             <div class="form-group">
                 <button type="submit" name="do" class="btn btn-default" data-import>
@@ -23,5 +32,12 @@
                 </button>
             </div>
         </form>
+    </div>
+
+    <div class="alert alert-warning" style="margin-top:20px">
+        * 'Calculate W/mAh/mWh/Ω' option will calculate remaining values from voltage and current
+        since TC66C doesn't record anything else. Calculated values are best estimates,
+        and they may not be accurate.<br />
+        WARNING: Incorrect period value will make bogus mAh/mWh values.
     </div>
 {% endblock %}

@@ -250,30 +250,45 @@ class Index:
         self.init()
         self.fill_config_from_parameters()
 
-        message = None
+        messages = []
         if self.config.read("version") not in ["TC66C-USB"]:
-            message = "Available only for TC66C USB"
+            messages.append("Available only for TC66C USB")
         elif self.storage.fetch_status() != "disconnected":
-            message = "Disconnect first"
+            messages.append("Disconnect first")
 
+        session_name = "TC66C recording %s" % pendulum.now().format("YYYY-MM-DD hh:mm:ss")
+        period = 1
+        calculate = False
         if "do" in request.form:
-            if message is None:
-                name = request.form.get("session_name")
-                if not name:
-                    message = "Please provide session name"
-                else:
-                    message = self.do_tc66c_import(name)
-                    if message is None:
+            if len(messages) == 0:
+                session_name = request.form.get("session_name")
+                if not session_name:
+                    messages.append("Please provide session name")
+
+                try:
+                    period = int(request.form.get("period"))
+                    if period < 1 or period > 60:
+                        raise ValueError
+                except ValueError:
+                    messages.append("Period has invalid value, please enter number between 1 and 60")
+
+                calculate = request.form.get("calculate") is not None
+
+                if len(messages) == 0:
+                    messages.extend(self.do_tc66c_import(session_name, period, calculate))
+                    if len(messages) == 0:
                         return redirect(url_for("index.graph"))
 
         return render_template(
             "tc66c-import.html",
-            message=message,
-            session_name="TC66C recording %s" % pendulum.now().format("YYYY-MM-DD hh:mm:ss")
+            messages=messages,
+            session_name=session_name,
+            period=period,
+            calculate=calculate,
         )
 
-    def do_tc66c_import(self, name):
-        message = None
+    def do_tc66c_import(self, name, period=1, calculate=False):
+        messages = []
         if self.import_in_progress:
             return "Import is already running"
         self.import_in_progress = True
@@ -283,24 +298,46 @@ class Index:
         try:
             interface.connect()
             begin = time()
+            previous_timestamp = None
+            accumulated_current = 0
+            accumulated_power = 0
             for index, record in enumerate(interface.read_records()):
+                timestamp = begin + (index * period)
+
                 data = {
                     "name": name,
-                    "timestamp": begin + index,
-                    "voltage": record["voltage"],
-                    "current": record["current"],
+                    "timestamp": timestamp,
+                    "voltage": round(record["voltage"] * 10000) / 10000,
+                    "current": round(record["current"] * 100000) / 100000,
                     "power": 0,
                     "temperature": 0,
                     "data_plus": 0,
                     "data_minus": 0,
                     "mode_id": 0,
                     "mode_name": None,
-                    "accumulated_current": 0,
-                    "accumulated_power": 0,
+                    "accumulated_current": round(accumulated_current),
+                    "accumulated_power": round(accumulated_power),
                     "accumulated_time": 0,
                     "resistance": 0,
                 }
+
+                if calculate:
+                    data["power"] = round(record["voltage"] * record["current"] * 1000) / 1000
+                    if record["current"] <= 0 and record["current"] >= 0:
+                        data["resistance"] = 9999.9
+                    else:
+                        data["resistance"] = round(record["voltage"] / record["current"] * 10) / 10
+                        if data["resistance"] > 9999.9:
+                            data["resistance"] = 9999.9
+
+                    if previous_timestamp is not None:
+                        delta = (timestamp - previous_timestamp) / 3600
+                        accumulated_current += (data["current"] * 1000) * delta
+                        accumulated_power += (data["power"] * 1000) * delta
+
                 self.storage.store_measurement(data)
+
+                previous_timestamp = timestamp
 
         except (KeyboardInterrupt, SystemExit):
             raise
@@ -309,11 +346,12 @@ class Index:
             exception = traceback.format_exc()
             self.storage.log(exception)
             message += "\n%s" % exception
+            messages.append(message)
         finally:
             interface.disconnect()
             self.import_in_progress = False
 
-        return message
+        return messages
 
     def url_for(self, endpoint, **values):
         if endpoint == "static":
