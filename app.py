@@ -105,7 +105,7 @@ if __name__ == "__main__":
         args = parse_cli(open_browser=False)
 
         def callback():
-            run(args)
+            run(args, embedded=True)
 
         url = "http://%s:%s" % ("127.0.0.1", args.port)
         view = Webview(url)

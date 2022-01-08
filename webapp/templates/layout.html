@@ -9,17 +9,28 @@
     <title>RD-USB {{ rd_user_version }}</title>
 
     <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="shortcut icon" />
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" />
+
+    {% if dark %}
+        <link href="{{ url_for('static', filename='css/bootstrap.dark.min.css') }}" rel="stylesheet" />
+    {% else %}
+        <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" />
+    {% endif %}
+
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
+    {% if dark %}
+        <link href="{{ url_for('static', filename='css/styles.dark.css') }}" rel="stylesheet" />
+    {% endif %}
 </head>
 <body>
     <div class="navbar-placeholder"></div>
     <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <div class="top clearfix">
-                <div class="navbar-header">
-                    <a href="{{ url_for('index.default') }}" class="navbar-brand">RD-USB</a>
-                </div>
+                {% if not embedded %}
+                    <div class="navbar-header">
+                        <a href="{{ url_for('index.default') }}" class="navbar-brand">RD-USB</a>
+                    </div>
+                {% endif %}
                 <div class="right">
                     <ul class="nav navbar-nav">
                         <li>
@@ -44,6 +55,9 @@
                 </li>
                 <li{% if page == "graph" %} class="active"{% endif %}>
                     <a href="{{ url_for('index.graph') }}">Graph</a>
+                </li>
+                <li{% if page == "setup" %} class="active"{% endif %}>
+                    <a href="{{ url_for('index.setup') }}">Setup</a>
                 </li>
             </ul>
             <form class="navbar-form navbar-right setup" id="connect">
@@ -111,6 +125,10 @@
 
         {% block content %}{% endblock %}
     </div>
+
+    {% if dark %}
+        <script>var ntdrt = ntdrt || {}; ntdrt.dark = true; </script>
+    {% endif %}
 
     <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>

@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+    <form action="" method="post" style="max-width:400px">
+        <div class="form-group">
+            <label class="control-label" for="theme">Theme</label>
+            <select class="form-control" id="theme" name="theme">
+                <option value="light"{% if setup["theme"] == "light" %} selected{% endif %}>Light</option>
+                <option value="dark"{% if setup["theme"] == "dark" %} selected{% endif %}>Dark</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <button type="submit" name="do" class="btn btn-default">
+                Save
+            </button>
+        </div>
+    </form>
+{% endblock %}

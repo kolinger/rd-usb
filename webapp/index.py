@@ -5,7 +5,7 @@ import os
 from time import time
 import traceback
 
-from flask import url_for, request, jsonify, redirect, flash, make_response
+from flask import url_for, request, jsonify, redirect, flash, make_response, current_app
 from flask.blueprints import Blueprint
 from flask.templating import render_template
 import pendulum
@@ -28,6 +28,7 @@ class Index:
         blueprint.add_url_rule("/data", "data", self.render_data)
         blueprint.add_url_rule("/graph", "graph", self.render_graph)
         blueprint.add_url_rule("/graph.json", "graph_data", self.render_graph_data)
+        blueprint.add_url_rule("/setup", "setup", self.render_setup, methods=["GET", "POST"])
         blueprint.add_url_rule("/ble", "ble", self.render_ble)
         blueprint.add_url_rule("/serial", "serial", self.render_serial)
         blueprint.add_url_rule("/tc66c-import", "tc66c_import", self.render_tc66c_import, methods=["GET", "POST"])
@@ -54,6 +55,12 @@ class Index:
         variables["status"] = status.title()
         variables["connect_disabled"] = status != "disconnected"
         variables["connect_button"] = "Connect" if status == "disconnected" else "Disconnect"
+
+        setup = self.config.read("setup")
+        if setup and "theme" in setup and setup["theme"] == "dark":
+            variables["dark"] = True
+
+        variables["embedded"] = current_app.config["embedded"]
 
         return variables
 
@@ -231,6 +238,23 @@ class Index:
         value = request.args.get("rate")
         if value is not None:
             self.config.write("rate", float(value))
+
+    def render_setup(self):
+        self.init()
+        setup = self.config.read("setup")
+        if not isinstance(setup, dict):
+            setup = {}
+
+        if "do" in request.form:
+            setup["theme"] = request.form["theme"]
+            self.config.write("setup", setup)
+            flash("Settings were successfully saved", "success")
+            return redirect(url_for("index.setup"))
+
+        return render_template(
+            "setup.html",
+            setup=setup,
+        )
 
     def render_ble(self):
         self.init()

@@ -37,7 +37,7 @@ def parse_cli(open_browser=True):
     return parser.parse_args()
 
 
-def run(args=None):
+def run(args=None, embedded=False):
     if not args:
         args = parse_cli()
 
@@ -45,6 +45,7 @@ def run(args=None):
     daemon = args.daemon
 
     app = Flask(__name__, static_folder=static_path)
+    app.config["embedded"] = embedded
     app.register_blueprint(Index().register())
 
     logger = logging.getLogger()

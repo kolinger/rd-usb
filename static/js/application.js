@@ -356,7 +356,7 @@ ntdrt.application = {
                         'xAxes': [{
                             'type': 'DateAxis',
                             'title': {
-                                'text': 'Time',
+                                'text': 'Time'
                             }
                         }],
                         'yAxes': [
@@ -374,12 +374,12 @@ ntdrt.application = {
                                     'forceCreate': true
                                 },
                                 'tooltip': {
-                                    'disabled': true,
+                                    'disabled': true
                                 },
                                 'renderer': {
                                     'labels': {
                                         'fill': left_color,
-                                        'fontWeight': 'bold',
+                                        'fontWeight': 'bold'
                                     }
                                 },
                                 'min': 0
@@ -460,6 +460,23 @@ ntdrt.application = {
                             'numberFormat': '#,###.####'
                         }
                     };
+
+                    if (ntdrt.dark) {
+                        var lightColor = '#c8c8c8';
+
+                        config['xAxes'][0]['title']['fill'] = lightColor;
+                        config['xAxes'][0]['renderer'] = {
+                            'labels': {'fill': lightColor},
+                            'template': {'stroke': lightColor},
+                        };
+
+                        config['yAxes'][0]['renderer']['grid'] = {'template': {'stroke': lightColor}};
+                        config['yAxes'][1]['renderer']['grid'] = {'template': {'stroke': lightColor}};
+
+                        config['cursor']['lineX'] = {'stroke': lightColor};
+                        config['cursor']['lineY'] = {'stroke': lightColor};
+                    }
+
                     self.chart = chart = am4core.createFromConfig(config, graph[0], 'XYChart');
 
                     self.chart.language.locale['_thousandSeparator'] = '';
