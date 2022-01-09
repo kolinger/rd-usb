@@ -492,31 +492,34 @@ ntdrt.application = {
 
                     switch(ntdrt.theme){
                         case "midnight":
-                            var x_axisTextColor = '#c8c8c8';
-                            var axisLineColor = '#c8c8c8';
+                            var xaxistextColor = '#c8c8c8';
+                            var axislineColor = '#c8c8c8';
                             var cursorColor = '#65ff00';
+                            alert(ntdrt.theme);
                             break;
 
                         case "dark":
-                            var x_axisTextColor = '#c8c8c8';
-                            var axisLineColor = '#c8c8c8';
+                            var xaxistextColor = '#c8c8c8';
+                            var axislineColor = '#c8c8c8';
                             var cursorColor = '#c8c8c8';
+                            alert(ntdrt.theme);
                             break;
 
                         default:
-                            var x_axisTextColor = '#000000';
-                            var axisLineColor = '#c8c8c8';
+                        	alert("DEF" + ntdrt.theme);
+                            var xaxistextColor = '#000000';
+                            var axislineColor = '#c8c8c8';
                             var cursorColor = '#c8c8c8';
                     }
 
-                    config['xAxes'][0]['title']['fill'] = x_axisTextColor;
+                    config['xAxes'][0]['title']['fill'] = xaxistextColor;
                     config['xAxes'][0]['renderer'] = {
-                        'labels': {'fill': x_axisTextColor},
-                        'template': {'stroke': x_axisTextColor},
+                        'labels': {'fill': xaxistextColor},
+                        'template': {'stroke': xaxistextColor},
                     };
 
-                    config['yAxes'][0]['renderer']['grid'] = {'template': {'stroke': axisLineColor}};
-                    config['yAxes'][1]['renderer']['grid'] = {'template': {'stroke': axisLineColor}};
+                    config['yAxes'][0]['renderer']['grid'] = {'template': {'stroke': axislineColor}};
+                    config['yAxes'][1]['renderer']['grid'] = {'template': {'stroke': axislineColor}};
 
                     config['cursor']['lineX'] = {'stroke': cursorColor};
                     config['cursor']['lineY'] = {'stroke': cursorColor};
