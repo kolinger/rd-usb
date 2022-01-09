@@ -21,6 +21,15 @@ ntdrt.application = {
             }
         });
 
+        var adjustNavigationPlaceholder = function () {
+            var navigation = $('.navbar');
+            var placeholder = $('.navbar-placeholder');
+            var height = navigation.outerHeight() + 20;
+            placeholder.css('height', height + 'px');
+        };
+        $(window).on('resize', adjustNavigationPlaceholder);
+        adjustNavigationPlaceholder();
+
         $(document).on('click', '.toggle-form', function (e) {
             e.preventDefault();
             var target = $('.navbar > .container > .navbar-form');
