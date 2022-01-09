@@ -30,9 +30,9 @@ Installation
 
 ### Binaries (Win x64 only)
 - Download from [releases](https://github.com/kolinger/rd-usb/releases)
-    - **rd-usb.exe** is CLI web server application. GUI is provided by web browser. 
+    - **rd-usb-x.exe** is CLI web server application. GUI is provided by web browser. 
     Run executable and web server will be shortly spawned on address http://127.0.0.1:5000.
-    - **rd-usb-install.exe** is installer of standalone GUI application. Works without web browser.
+    - **rd-usb-install-x.exe** is installer of standalone GUI application. Works without web browser.
     Embedded browser is used instead. External web browser still can be used with address (see above).
 - Application will be probably blocked by Microsoft SmartScreen. For unblock click `More info`
 and `Run anyway`. I don't have certificate for signing and application does not have any
@@ -40,7 +40,8 @@ reputation so Microsoft will block by default.
 
 ### Source code
 1. Python 3.4 or newer is required
-2. Download from github or `git clone https://github.com/kolinger/rd-usb.git`
+2. Download `rd-usb-source-x.zip` from [releases](https://github.com/kolinger/rd-usb/releases)
+   or `git clone https://github.com/kolinger/rd-usb.git`
 3. Install requirements 
    - For GUI: `pip install -r requirements.txt`
    - For headless `pip install -r requirements_headless.txt` this version doesn't 
