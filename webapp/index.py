@@ -10,7 +10,7 @@ from flask.blueprints import Blueprint
 from flask.templating import render_template
 import pendulum
 
-from interfaces.tc import TcSerialInterface, TcBleInterface
+from interfaces.tc import TcSerialInterface
 from utils.config import Config, static_path
 from utils.formatting import Format
 from utils.storage import Storage
@@ -57,7 +57,7 @@ class Index:
         variables["connect_button"] = "Connect" if status == "disconnected" else "Disconnect"
 
         setup = self.config.read("setup")
-        if setup and "theme" in setup :
+        if setup and "theme" in setup:
             variables["theme"] = setup["theme"]
 
         variables["embedded"] = current_app.config["embedded"]

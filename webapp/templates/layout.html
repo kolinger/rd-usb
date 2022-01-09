@@ -118,7 +118,7 @@
         {% block content %}{% endblock %}
     </div>
 		
-	<script>var ntdrt = ntdrt || {}; ntdrt.theme = "{{ theme }}"; </script>   
+	<script>var ntdrt = ntdrt || {}; ntdrt.theme = '{{ theme }}'; </script>
         
     <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
