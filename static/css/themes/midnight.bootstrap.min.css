@@ -1451,7 +1451,7 @@ button.close{padding:0;cursor:pointer;background:0 0;border:0;-webkit-appearance
 .navbar-form{margin-left:5px;margin-right:5px}
 .btn,.btn:hover{border-color:rgba(0,0,0,.6);text-shadow:1px 1px 1px rgba(0,0,0,.3)}
 .btn-default{background-color:#484e55;filter:none}
-.btn-default:hover{background-color: #c8c8c8;filter:none;}
+.btn-default:hover{background-color: #00A65A;filter:none;}
 .btn-primary{background-color:#8a9196;filter:none}
 .btn-primary:hover{background-color:#404448;filter:none}
 .btn-success{background-color:#78cc78;filter:none}
