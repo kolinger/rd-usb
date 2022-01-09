@@ -29,12 +29,21 @@
     float: right;
 }
 
+.navbar .navbar-form.setup {
+    margin-right: -15px;
+}
+
+.navbar .navbar-form .form-control {
+    padding-left: 7px;
+    padding-right: 7px;
+}
+
 .navbar .form-group {
     margin: 0 7px 0 0;
 }
 
 .navbar .form-group input {
-    width: 150px;
+    width: 165px;
 }
 
 .navbar .form-group input[name="port"] {
