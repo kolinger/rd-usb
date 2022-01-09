@@ -9,22 +9,8 @@
     <title>RD-USB {{ rd_user_version }}</title>
 
     <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="shortcut icon" />
-
-    {% if theme == "dark" %}
-        <link href="{{ url_for('static', filename='css/bootstrap.dark.min.css') }}" rel="stylesheet" />
-    {% elif theme == "midnight" %}
-        <link href="{{ url_for('static', filename='css/bootstrap.midnight.min.css') }}" rel="stylesheet" />
-    {% else %}
-        <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" />
-    {% endif %}
-
-    {% if theme == "dark" %}
-        <link href="{{ url_for('static', filename='css/styles.dark.css') }}" rel="stylesheet" />
-    {% elif theme == "midnight" %}
-        <link href="{{ url_for('static', filename='css/styles.midnight.css') }}" rel="stylesheet" />
-    {% else %}
-        <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
-    {% endif %}
+    <link href="{{ url_for('static', filename='css/themes/' + theme + '/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='css/themes/' + theme + '/styles.css') }}" rel="stylesheet" />
 </head>
 <body>
     <div class="navbar-placeholder"></div>
@@ -145,14 +131,8 @@
         {% block content %}{% endblock %}
     </div>
 
-    {% if theme == "dark" %}
-        <script>var ntdrt = ntdrt || {}; ntdrt.theme = "dark"; </script>
-    {% elif theme == "midnight" %}
-        <script>var ntdrt = ntdrt || {}; ntdrt.theme = "midnight"; </script>
-    {% else %}    
-        <script>var ntdrt = ntdrt || {}; ntdrt.theme = "light"; </script>
-    {% endif %}
-
+    <script>var ntdrt = ntdrt || {}; ntdrt.theme = theme; </script>
+    
     <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
 
