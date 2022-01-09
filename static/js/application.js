@@ -336,10 +336,11 @@ ntdrt.application = {
 
                 var left_color;
                 var right_color;
-                
-                switch(colorsMode){
-                    case "colorful":
-                        var colors = {
+
+                var colors;
+                switch (colorsMode) {
+                    case 'colorful':
+                        colors = {
                             'voltage': '#0080ff',
                             'current': '#e50000',
                             'current-m': '#e50000',
@@ -354,8 +355,8 @@ ntdrt.application = {
                         right_color = colors.hasOwnProperty(right_axis) ? colors[right_axis] : colors['fallback'];
                         break;
 
-                    case "midnight":
-                        var colors = {
+                    case 'midnight':
+                        colors = {
                             'voltage': '#5489bf',
                             'current': '#c83c3c',
                             'current-m': '#c83c3c',
@@ -502,37 +503,35 @@ ntdrt.application = {
                         }
                     };
 
-                    switch(ntdrt.theme){
-                        case "midnight":
-                            var x_axisTextColor = '#c8c8c8';
-                            var axisLineColor = '#c8c8c8';
-                            var cursorColor = '#65ff00';
+                    var xAxisTextColor = null;
+                    var axisLineColor = null;
+                    var cursorColor = null;
+                    switch (ntdrt.theme) {
+                        case 'midnight':
+                            xAxisTextColor = axisLineColor = '#c8c8c8';
+                            cursorColor = '#65ff00';
                             break;
 
-                        case "dark":
-                            var x_axisTextColor = '#c8c8c8';
-                            var axisLineColor = '#c8c8c8';
-                            var cursorColor = '#c8c8c8';
+                        case 'dark':
+                            xAxisTextColor = axisLineColor = cursorColor = '#c8c8c8';
                             break;
-
-                        default:
-                            var x_axisTextColor = '#000000';
-                            var axisLineColor = '#c8c8c8';
-                            var cursorColor = '#c8c8c8';
+                    }
+                    if (xAxisTextColor) {
+                        config['xAxes'][0]['title']['fill'] = xAxisTextColor;
+                        config['xAxes'][0]['renderer'] = {
+                            'labels': {'fill': xAxisTextColor},
+                            'grid': {'template': {'stroke': xAxisTextColor}},
+                        };
+                    }
+                    if (axisLineColor) {
+                        config['yAxes'][0]['renderer']['grid'] = {'template': {'stroke': axisLineColor}};
+                        config['yAxes'][1]['renderer']['grid'] = {'template': {'stroke': axisLineColor}};
+                    }
+                    if (cursorColor) {
+                        config['cursor']['lineX'] = {'stroke': cursorColor};
+                        config['cursor']['lineY'] = {'stroke': cursorColor};
                     }
 
-                    config['xAxes'][0]['title']['fill'] = x_axisTextColor;
-                    config['xAxes'][0]['renderer'] = {
-                        'labels': {'fill': x_axisTextColor},
-                        'template': {'stroke': x_axisTextColor},
-                    };
-
-                    config['yAxes'][0]['renderer']['grid'] = {'template': {'stroke': axisLineColor}};
-                    config['yAxes'][1]['renderer']['grid'] = {'template': {'stroke': axisLineColor}};
-
-                    config['cursor']['lineX'] = {'stroke': cursorColor};
-                    config['cursor']['lineY'] = {'stroke': cursorColor};
-				
                     self.chart = chart = am4core.createFromConfig(config, graph[0], 'XYChart');
 
                     self.chart.language.locale['_thousandSeparator'] = '';
