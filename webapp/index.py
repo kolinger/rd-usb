@@ -152,8 +152,8 @@ class Index:
             sessions=sessions,
             selected=selected,
             measurements=measurements,
-            page="data",
             pages=pages,
+            page="data",
         )
 
     def prepare_pages(self, name, page, limit, count, blocks=10):
@@ -265,6 +265,7 @@ class Index:
         return render_template(
             "setup.html",
             setup=setup,
+            page="setup"
         )
 
     def render_ble(self):
@@ -320,6 +321,7 @@ class Index:
             session_name=session_name,
             period=period,
             calculate=calculate,
+            page="data"
         )
 
     def do_tc66c_import(self, name, period=1, calculate=False):
