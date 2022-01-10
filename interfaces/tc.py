@@ -6,7 +6,7 @@ from time import time, sleep
 from Crypto.Cipher import AES
 
 try:
-    from bleak import BleakClient
+    from bleak import BleakClient, BleakError
     from bleak import discover
     supported = True
 except Exception as e:
@@ -20,8 +20,8 @@ import serial
 
 from interfaces.interface import Interface
 
-SERVER_RX_DATA = "0000ffe9-0000-1000-8000-00805f9b34fb"
-SERVER_TX_DATA = "0000ffe4-0000-1000-8000-00805f9b34fb"
+SERVER_RX_DATA = ["0000ffe9-0000-1000-8000-00805f9b34fb", "0000ffe2-0000-1000-8000-00805f9b34fb"]
+SERVER_TX_DATA = ["0000ffe4-0000-1000-8000-00805f9b34fb", "0000ffe1-0000-1000-8000-00805f9b34fb"]
 ASK_FOR_VALUES_COMMAND = "bgetva"
 
 
@@ -30,6 +30,7 @@ class TcBleInterface(Interface):
     client = None
     loop = None
     bound = False
+    addresses_index = 0
 
     def __init__(self, address):
         self.address = address
@@ -55,6 +56,7 @@ class TcBleInterface(Interface):
         if not supported:
             raise NotSupportedException("TC66C over BLE is NOT SUPPORTED, reason: %s" % unsupported_reason)
         self.client = BleakClient(address, loop=self.get_loop())
+        self.addresses_index = 0
         await self.client.connect()
 
     def disconnect(self):
@@ -74,7 +76,7 @@ class TcBleInterface(Interface):
 
     async def _close_run(self):
         try:
-            await self.client.stop_notify(SERVER_TX_DATA)
+            await self.client.stop_notify(SERVER_TX_DATA[self.addresses_index])
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
@@ -94,11 +96,18 @@ class TcBleInterface(Interface):
         self.response.reset()
 
         for retry in range(0, 3):
-            await self.client.write_gatt_char(SERVER_RX_DATA, self.encode_command(ASK_FOR_VALUES_COMMAND), True)
+            address = SERVER_RX_DATA[self.addresses_index]
+            try:
+                await self.client.write_gatt_char(address, self.encode_command(ASK_FOR_VALUES_COMMAND), True)
+            except BleakError as e:
+                if "Characteristic %s was not found" % address in str(e):
+                    self.addresses_index += 1
+                    if self.addresses_index >= len(SERVER_RX_DATA):
+                        raise
 
             if not self.bound:
                 self.bound = True
-                await self.client.start_notify(SERVER_TX_DATA, self.response.callback)
+                await self.client.start_notify(SERVER_TX_DATA[self.addresses_index], self.response.callback)
 
             expiration = time() + 5
             while not self.response.is_complete() and time() <= expiration:
