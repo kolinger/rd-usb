@@ -42,13 +42,13 @@ class Index:
     def fill(self):
         variables = {
             "rd_user_version": version,
-            "format": Format(),
             "url_for": self.url_for,
             "version": self.config.read("version", "UM34C"),
             "port": self.config.read("port", ""),
             "rate": str(self.config.read("rate", 1.0)),
             "name": self.config.read("name", pendulum.now().format("YYYY-MM-DD")),
             "ble_address": self.config.read("ble_address"),
+            "format_datetime": self.format_date,
         }
 
         status = self.storage.fetch_status()
@@ -73,77 +73,83 @@ class Index:
     def render_data(self):
         self.init()
 
-        names, selected = self.prepare_selection()
-        name = self.storage.translate_selected_name(selected)
+        sessions, selected = self.prepare_selection()
+        session = self.storage.get_selected_session(selected)
 
-        if request.args.get("export") == "":
-            string = io.StringIO()
-            writer = csv.writer(string)
-            format = Format()
+        format = None
+        measurements = []
+        pages = []
+        if session:
+            format = Format(session["version"])
 
-            names = []
-            for field in format.export_fields:
-                names.append(format.field_name(field))
-            writer.writerow(names)
+            if request.args.get("export") == "":
+                string = io.StringIO()
+                writer = csv.writer(string)
 
-            run_time_offset = None
-            for item in self.storage.fetch_measurements(name):
-                if run_time_offset is None and item["resistance"] < 9999.9:
-                    run_time_offset = item["timestamp"]
-
-                rune_time = 0
-                if run_time_offset is not None:
-                    rune_time = round(item["timestamp"] - run_time_offset)
-
-                values = []
+                names = []
                 for field in format.export_fields:
-                    if field == "time":
-                        values.append(format.time(item))
-                    elif field == "run_time":
-                        remaining = rune_time
-                        hours = floor(remaining / 3600)
-                        remaining -= hours * 3600
-                        minutes = floor(remaining / 60)
-                        remaining -= minutes * 60
-                        seconds = remaining
-                        parts = [
-                            hours,
-                            minutes,
-                            seconds,
-                        ]
-                        for index, value in enumerate(parts):
-                            parts[index] = str(value).zfill(2)
-                        values.append(":".join(parts))
-                    elif field == "run_time_seconds":
-                        values.append(rune_time)
-                    else:
-                        values.append(item[field])
-                writer.writerow(values)
+                    names.append(format.field_name(field))
+                writer.writerow(names)
 
-            output = make_response(string.getvalue())
-            output.headers["Content-Disposition"] = "attachment; filename=" + name + ".csv"
-            output.headers["Content-type"] = "text/csv"
-            return output
+                run_time_offset = None
+                for item in self.storage.fetch_measurements(session["id"]):
+                    if run_time_offset is None and item["resistance"] < 9999.9:
+                        run_time_offset = item["timestamp"]
 
-        elif request.args.get("destroy") == "":
-            if selected == "":
-                flash("Please select session first", "info")
+                    rune_time = 0
+                    if run_time_offset is not None:
+                        rune_time = round(item["timestamp"] - run_time_offset)
+
+                    values = []
+                    for field in format.export_fields:
+                        if field == "time":
+                            values.append(format.time(item))
+                        elif field == "run_time":
+                            remaining = rune_time
+                            hours = floor(remaining / 3600)
+                            remaining -= hours * 3600
+                            minutes = floor(remaining / 60)
+                            remaining -= minutes * 60
+                            seconds = remaining
+                            parts = [
+                                hours,
+                                minutes,
+                                seconds,
+                            ]
+                            for index, value in enumerate(parts):
+                                parts[index] = str(value).zfill(2)
+                            values.append(":".join(parts))
+                        elif field == "run_time_seconds":
+                            values.append(rune_time)
+                        else:
+                            values.append(item[field])
+                    writer.writerow(values)
+
+                output = make_response(string.getvalue())
+                output.headers["Content-Disposition"] = "attachment; filename=" + session["name"] + ".csv"
+                output.headers["Content-type"] = "text/csv"
+                return output
+
+            elif request.args.get("destroy") == "":
+                if selected == "":
+                    flash("Please select session first", "info")
+                    return redirect(request.path)
+                self.storage.destroy_measurements(session["id"])
+                flash("Measurements with session name '" + session["name"] + "' were deleted", "danger")
                 return redirect(request.path)
-            self.storage.destroy_measurements(name)
-            flash("Measurements with session name '" + name + "' were deleted", "danger")
-            return redirect(request.path)
 
-        page = request.args.get("page", 1, int)
-        limit = 100
-        offset = limit * (page - 1)
-        count = self.storage.fetch_measurements_count(name)
-        pages = self.prepare_pages(name, page, limit, count)
+            page = request.args.get("page", 1, int)
+            limit = 100
+            offset = limit * (page - 1)
+            count = self.storage.fetch_measurements_count(session["id"])
+            pages = self.prepare_pages(session["id"], page, limit, count)
 
-        measurements = self.storage.fetch_measurements(name, limit, offset)
+            measurements = self.storage.fetch_measurements(session["id"], limit, offset)
 
         return render_template(
             "data.html",
-            names=names,
+            format=format,
+            sessions=sessions,
             selected=selected,
             measurements=measurements,
             page="data",
@@ -175,7 +181,10 @@ class Index:
     def render_graph(self):
         self.init()
 
-        names, selected = self.prepare_selection()
+        sessions, selected = self.prepare_selection()
+        session = self.storage.get_selected_session(selected)
+
+        format = Format(session["version"] if session else None)
 
         last_measurement = None
         if selected == "":
@@ -183,7 +192,8 @@ class Index:
 
         return render_template(
             "graph.html",
-            names=names,
+            format=format,
+            sessions=sessions,
             selected=selected,
             item=last_measurement,
             left_axis="voltage",
@@ -195,8 +205,8 @@ class Index:
     def render_graph_data(self):
         self.init()
 
-        selected = request.args.get("name")
-        name = self.storage.translate_selected_name(selected)
+        selected = request.args.get("session")
+        session = self.storage.get_selected_session(selected)
 
         left_axis = request.args.get("left_axis")
         right_axis = request.args.get("right_axis")
@@ -204,36 +214,37 @@ class Index:
         if self.config.read("colors") != colors:
             self.config.write("colors", colors, flush=True)
 
-        format = Format()
+        format = Format(session["version"] if session else None)
 
         data = []
-        for item in self.storage.fetch_measurements(name):
-            if left_axis in item:
-                data.append({
-                    "date": format.timestamp(item),
-                    "left": item[left_axis],
-                    "right": item[right_axis],
-                })
+        if session:
+            for item in self.storage.fetch_measurements(session["id"]):
+                if left_axis in item:
+                    data.append({
+                        "date": format.timestamp(item),
+                        "left": item[left_axis],
+                        "right": item[right_axis],
+                    })
 
         return jsonify(data)
 
     def prepare_selection(self):
-        names = self.storage.fetch_measurement_names()
-        names = self.storage.clear_nonsense_measurement_names(names)
-        selected = request.args.get("name")
-        if not selected:
+        sessions = self.storage.fetch_sessions()
+        selected = request.args.get("session")
+        try:
+            selected = int(selected)
+        except (ValueError, TypeError):
+            selected = None
+
+        if selected is None:
             selected = ""
 
-        return names, selected
+        return sessions, selected
 
     def fill_config_from_parameters(self):
         value = request.args.get("version")
         if value is not None:
             self.config.write("version", value)
-
-        value = request.args.get("name")
-        if value is not None:
-            self.config.write("name", value)
 
         value = request.args.get("rate")
         if value is not None:
@@ -280,7 +291,7 @@ class Index:
         elif self.storage.fetch_status() != "disconnected":
             messages.append("Disconnect first")
 
-        session_name = "TC66C recording %s" % pendulum.now().format("YYYY-MM-DD hh:mm:ss")
+        session_name = "My recording"
         period = 1
         calculate = False
         if "do" in request.form:
@@ -325,11 +336,14 @@ class Index:
             previous_timestamp = None
             accumulated_current = 0
             accumulated_power = 0
+            session_id = None
             for index, record in enumerate(interface.read_records()):
                 timestamp = begin + (index * period)
 
+                if session_id is None:
+                    session_id = self.storage.create_session(name, "TC66C recording")
+
                 data = {
-                    "name": name,
                     "timestamp": timestamp,
                     "voltage": round(record["voltage"] * 10000) / 10000,
                     "current": round(record["current"] * 100000) / 100000,
@@ -343,6 +357,7 @@ class Index:
                     "accumulated_power": round(accumulated_power),
                     "accumulated_time": 0,
                     "resistance": 0,
+                    "session_id": session_id,
                 }
 
                 if calculate:
@@ -384,3 +399,7 @@ class Index:
                 file_path = static_path + "/" + filename
                 values["v"] = int(os.stat(file_path).st_mtime)
         return url_for(endpoint, **values)
+
+    def format_date(self, timestamp):
+        date = pendulum.from_timestamp(timestamp)
+        return date.in_timezone("local").format("YYYY-MM-DD HH:mm:ss")

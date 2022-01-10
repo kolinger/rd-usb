@@ -1,3 +1,5 @@
+import decimal
+
 import pendulum
 
 from utils.usb import decode_usb_data_lines
@@ -30,8 +32,11 @@ class Format:
         "timestamp": "Unix time",
     }
 
-    def __init__(self):
-        pass
+    def __init__(self, version=None):
+        self.version = version
+        self.um25c = self.version == "UM25C"
+        self.tc66c = self.version and self.version.startswith("TC66C")
+        self.decimal_context = decimal.Context(20)
 
     def time(self, data):
         time = pendulum.from_timestamp(data["timestamp"])
@@ -42,19 +47,19 @@ class Format:
         return data["timestamp"] * 1000
 
     def voltage(self, data):
-        return str(data["voltage"]) + " V"
+        return self.format_value(data, "voltage") + " V"
 
     def current(self, data):
-        return str(data["current"]) + " A"
+        return self.format_value(data, "current") + " A"
 
     def power(self, data):
-        return str(data["power"]) + " W"
+        return self.format_value(data, "power") + " W"
 
     def temperature(self, data):
-        return str(data["temperature"]) + " °C"
+        return self.format_value(data, "temperature") + " °C"
 
     def data(self, data):
-        return "+" + str(data["data_plus"]) + " / -" + str(data["data_minus"]) + " V"
+        return "+" + self.format_value(data, "data_plus") + " / -" + self.format_value(data, "data_minus") + " V"
 
     def mode(self, data):
         if data["mode_id"] is None and data["data_plus"] is not None:
@@ -64,10 +69,10 @@ class Format:
         return "id: " + str(data["mode_id"])
 
     def accumulated_current(self, data):
-        return str(data["accumulated_current"]) + " mAh"
+        return self.format_value(data, "accumulated_current") + " mAh"
 
     def accumulated_power(self, data):
-        return str(data["accumulated_power"]) + " mWh"
+        return self.format_value(data, "accumulated_power") + " mWh"
 
     def accumulated_time(self, data):
         if data["accumulated_time"] is None:
@@ -90,3 +95,48 @@ class Format:
         if field in self.field_names:
             return self.field_names[field]
         return field
+
+    def format_value(self, data, name):
+        value = data[name]
+        precision = None
+        variable = False
+        if name == "voltage":
+            if self.tc66c:
+                precision = 4
+            elif self.um25c:
+                precision = 3
+            else:
+                precision = 2
+            variable = True
+        elif name == "current":
+            if self.tc66c:
+                precision = 5
+            elif self.um25c:
+                precision = 4
+            else:
+                precision = 3
+            variable = True
+        elif name == "power":
+            precision = 4 if self.tc66c else 3
+            variable = True
+        elif name == "temperature":
+            precision = 0
+        elif name in ["data_plus", "data_minus"]:
+            precision = 2
+        elif name in ["accumulated_current", "accumulated_power"]:
+            precision = 0
+        elif name == "resistance":
+            precision = 1
+        if precision is not None:
+            if not self.version and variable:
+                # backward compatibility:
+                # since we don't know what meter was used, then don't round to fixed number of places
+                value = format(self.decimal_context.create_decimal(repr(value)), "f")
+            else:
+                value = self.format_number(value, precision)
+        return value
+
+    def format_number(self, value, precision):
+        if precision > 0:
+            return ("{:.%sf}" % precision).format(value)
+        return "{:d}".format(int(round(value)))

@@ -55,7 +55,7 @@ class Backend(Namespace):
                 data["name"] += " " + pendulum.now().format("YYYY-MM-DD HH:mm")
 
         if not data["name"]:
-            data["name"] = "%s %s" % (self.config.read("version"), pendulum.now().format("YYYY-MM-DD hh:mm:ss"))
+            data["name"] = "My measurement"
 
         self.config.write("name", data["name"])
 
@@ -197,6 +197,8 @@ class Daemon:
 
             name = self.config.read("name")
             interval = float(self.config.read("rate"))
+            version = self.config.read("version")
+            session_id = self.storage.create_session(name, version)
             while self.running:
                 begin = timer()
                 data = self.retry(self.interface.read)
@@ -209,8 +211,8 @@ class Daemon:
                 else:
                     self.log(json.dumps(data))
                     if data:
-                        data["name"] = name
-                        self.update(data)
+                        data["session_id"] = session_id
+                        self.update(data, version)
                     self.storage.store_measurement(data)
 
                 measurement_runtime = timer() - begin
@@ -233,8 +235,8 @@ class Daemon:
         self.log("Disconnected")
         self.thread = None
 
-    def update(self, data):
-        format = Format()
+    def update(self, data, version):
+        format = Format(version)
 
         table = []
         for name in format.table_fields:

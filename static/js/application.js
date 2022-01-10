@@ -136,7 +136,7 @@ ntdrt.application = {
 
         socket.on('update', function () {
             if (newConnection) {
-                window.location.href = "/graph?name=";
+                window.location.href = "/graph?session=";
             }
         });
 
@@ -325,7 +325,7 @@ ntdrt.application = {
 
                 graph.parent().find('.loading').show();
 
-                var name = $('select[name="name"]').val();
+                var session = $('select[name="session"]').val();
 
                 var left_axis = self.left_axis = $('select[name="left_axis"]').val();
                 var left_name = $('#graph-settings option[value="' + left_axis + '"]').first().text();
@@ -387,7 +387,7 @@ ntdrt.application = {
                 var right_unit = unit(right_name);
 
                 var url = graph.attr('data-url');
-                url += '?name=' + name;
+                url += '?session=' + session;
                 url += '&left_axis=' + left_axis;
                 url += '&right_axis=' + right_axis;
                 url += '&colors=' + colorsMode;
