@@ -3,7 +3,7 @@ import re
 
 version = None
 for entry in os.listdir("dist/"):
-    match = re.search(r"^rd-usb-source-(v[0-9.]+)\.zip$", entry)
+    match = re.search(r"^rd-usb-source-(v.*)\.zip$", entry)
     if match:
         version = match.group(1)
         break
