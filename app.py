@@ -9,7 +9,7 @@ from urllib import request
 
 from appdirs import user_cache_dir
 import webview
-from webview.platforms.cef import settings
+from webview.platforms.cef import settings, command_line_switches
 
 from utils.config import data_path, Config
 from utils.version import version
@@ -102,7 +102,10 @@ if __name__ == "__main__":
             multiprocessing.freeze_support()
             exit(0)
 
-        args = parse_cli(open_browser=False)
+        args = parse_cli(webview=True)
+
+        if args.disable_gpu:
+            command_line_switches["disable-gpu"] = ""
 
         def callback():
             run(args, embedded=True)

@@ -28,12 +28,16 @@ def url_ok(url):
         return False
 
 
-def parse_cli(open_browser=True):
+def parse_cli(open_browser=True, webview=False):
     parser = argparse.ArgumentParser()
     parser.add_argument("port", nargs="?", type=int, default=5000, help="Port for web server to listen on")
-    parser.add_argument("--daemon", action="store_true", default=not open_browser, help="Do not launch web browser")
     parser.add_argument("--on-receive", help="Call this program/script when new measurements are received")
     parser.add_argument("--on-receive-interval", type=int, default=60, help="Interval for --on-receive (in seconds)")
+    if webview:
+        parser.add_argument("--disable-gpu", action="store_true", default=False, help="Disable GPU rendering")
+    else:
+        parser.add_argument("--daemon", action="store_true", default=not open_browser, help="Do not launch web browser")
+
     return parser.parse_args()
 
 
@@ -42,7 +46,7 @@ def run(args=None, embedded=False):
         args = parse_cli()
 
     port = args.port
-    daemon = args.daemon
+    daemon = "daemon" in args and args.daemon
 
     app = Flask(__name__, static_folder=static_path)
     app.config["embedded"] = embedded
@@ -77,19 +81,20 @@ def run(args=None, embedded=False):
         app.wsgi_app = socketio.Middleware(sockets, app.wsgi_app)
         sockets.register_namespace(Backend(args.on_receive, args.on_receive_interval))
 
-        def open_in_browser():
-            logging.info("Application is starting...")
+        if not embedded:
+            def open_in_browser():
+                logging.info("Application is starting...")
 
-            url = "http://127.0.0.1:%s" % port
-            while not url_ok(url):
-                sleep(0.5)
+                url = "http://127.0.0.1:%s" % port
+                while not url_ok(url):
+                    sleep(0.5)
 
-            logging.info("Application is available at " + url)
+                logging.info("Application is available at " + url)
 
-            if not app.debug and not daemon:
-                webbrowser.open(url)
+                if not app.debug and not daemon:
+                    webbrowser.open(url)
 
-        Thread(target=open_in_browser, daemon=True).start()
+            Thread(target=open_in_browser, daemon=True).start()
 
         app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=False)
 
