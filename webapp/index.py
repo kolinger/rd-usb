@@ -57,8 +57,7 @@ class Index:
         variables["connect_button"] = "Connect" if status == "disconnected" else "Disconnect"
 
         setup = self.config.read("setup")
-        if setup and "theme" in setup:
-            variables["theme"] = setup["theme"]
+        variables["theme"] = setup["theme"] if setup and "theme" in setup else "light"
 
         variables["embedded"] = current_app.config["embedded"]
 
