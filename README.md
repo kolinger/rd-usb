@@ -183,6 +183,48 @@ Note: `rd-usb` should not be exposed on untrusted network or to untrusted users.
 Use [HTTP basic auth](https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/) 
 for example as authentication mechanism when running rd-usb at untrusted network.
 
+Systemd service
+--
+
+If you would like to have rd-usb start automatically on unix systems, you can grab the example service files, drop them in `/etc/systemd/system/` respectively:
+
+`sudo nano /etc/systemd/system/rfcomm0.service`
+```service
+[Unit]
+Description=rfcomm0
+After=bluetooth.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/bin/rfcomm bind 0 <METER_BT_MAC_ADDRESS>
+ExecStart=/usr/bin/chown root:dialout /dev/rfcomm0
+ExecStop=/usr/bin/rfcomm release 0
+RemainAfterExit=yes
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
+```
+`sudo systemctl enable rfcomm0.service`
+
+`sudo nano /etc/systemd/system/rd-usb.service`
+```service
+[Service]
+WorkingDirectory=</path/to/rd-usb>
+ExecStart=python3 web.py 5000 --daemon
+User=www-data
+
+[Install]
+WantedBy=multi-user.target
+
+[Unit]
+Description=USB Meter Monitoring Webserver
+After=network.target
+After=rfcomm0.service
+```
+`sudo systemctl enable rd-usb.service`
+
 Development
 --
 
