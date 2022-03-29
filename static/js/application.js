@@ -6,6 +6,10 @@ ntdrt.application = {
 
     init: function () {
         var self = ntdrt.application;
+        self.relativeAppPrefix = ntdrt.appPrefix;
+        if (self.relativeAppPrefix === '/') {
+            self.relativeAppPrefix = '';
+        }
 
         $(document).on('click', '[data-confirm]', function (e) {
             return confirm($(this).attr('data-confirm'));
@@ -111,11 +115,7 @@ ntdrt.application = {
         var self = this;
 
         var url = location.protocol + '//' + location.host;
-        var path = '/socket.io';
-        if (ntdrt.appPrefix.length > 1) {
-            path = ntdrt.appPrefix + path;
-        }
-        var socket = self.socket = io.connect(url, {path: path});
+        var socket = self.socket = io.connect(url, {path: self.relativeAppPrefix + '/socket.io'});
 
         var newConnection = false;
         socket.on('connecting', function () {
@@ -142,12 +142,12 @@ ntdrt.application = {
 
         socket.on('update', function () {
             if (newConnection) {
-                window.location.href = "/graph?session=";
+                window.location.href = self.relativeAppPrefix + '/graph?session=';
             }
         });
 
         socket.on('log-error', function () {
-            window.location.href = "/";
+            window.location.href = self.relativeAppPrefix + '/';
         });
 
         $(document).on('submit', '#connect', function (e) {
