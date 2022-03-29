@@ -77,7 +77,7 @@ def run(args=None, embedded=False):
 
         Storage().init()
 
-        sockets = socketio.Server(async_mode="threading")
+        sockets = socketio.Server(async_mode="threading", cors_allowed_origins="*")
         app.wsgi_app = socketio.Middleware(sockets, app.wsgi_app)
         sockets.register_namespace(Backend(args.on_receive, args.on_receive_interval))
 

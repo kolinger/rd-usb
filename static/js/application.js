@@ -109,7 +109,8 @@ ntdrt.application = {
     socket: null,
     connection: function () {
         var self = this;
-        var socket = self.socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        var socket = self.socket = io.connect(location.protocol + '//' + location.host + ':' + location.port);
 
         var newConnection = false;
         socket.on('connecting', function () {
