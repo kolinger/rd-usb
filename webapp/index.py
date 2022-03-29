@@ -133,10 +133,10 @@ class Index:
             elif request.args.get("destroy") == "":
                 if selected == "":
                     flash("Please select session first", "info")
-                    return redirect(request.path)
+                    return redirect(request.base_url)
                 self.storage.destroy_measurements(session["id"])
                 flash("Measurements with session name '" + session["name"] + "' were deleted", "danger")
-                return redirect(request.path)
+                return redirect(request.base_url)
 
             page = request.args.get("page", 1, int)
             limit = 100
