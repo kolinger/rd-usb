@@ -186,10 +186,12 @@ for example as authentication mechanism when running rd-usb at untrusted network
 Systemd service
 --
 
-If you would like to have rd-usb start automatically on unix systems, you can grab the example service files, drop them in `/etc/systemd/system/` respectively:
+If you would like to have rd-usb start automatically on unix systems, you can grab the example service files,
+drop them in `/etc/systemd/system/` respectively:
 
-`sudo nano /etc/systemd/system/rfcomm0.service`
-```service
+/etc/systemd/system/rfcomm0.service
+
+```
 [Unit]
 Description=rfcomm0
 After=bluetooth.target
@@ -206,24 +208,41 @@ Restart=no
 [Install]
 WantedBy=multi-user.target
 ```
-`sudo systemctl enable rfcomm0.service`
 
-`sudo nano /etc/systemd/system/rd-usb.service`
-```service
+```
+systemctl enable rfcomm0.service
+systemctl start rfcomm0.service
+```
+
+/etc/systemd/system/rd-usb.service
+
+```
+[Unit]
+Description=rd-usb
+After=network.target
+After=rfcomm0.service
+
 [Service]
+Type=simple
 WorkingDirectory=</path/to/rd-usb>
-ExecStart=python3 web.py 5000 --daemon
+ExecStart=/usr/bin/python3 web.py --daemon
 User=www-data
+Group=www-data
+Restart=always
+RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
-
-[Unit]
-Description=USB Meter Monitoring Webserver
-After=network.target
-After=rfcomm0.service
 ```
-`sudo systemctl enable rd-usb.service`
+
+```
+systemctl enable rd-usb.service
+systemctl start rd-usb.service
+```
+
+Don't forget to add user of rd-usb.service to `dialout` group to enable access to /dev/rfcomm0 for communication.
+In this example you need to add `www-data` to `dialout` like this `usermod -aG dialout www-data`. 
+Webserver as reverse proxy in front of rd-usb.service is suggested (like nginx, apache2, ...).
 
 Development
 --
