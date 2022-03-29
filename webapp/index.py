@@ -49,6 +49,7 @@ class Index:
             "name": self.config.read("name", pendulum.now().format("YYYY-MM-DD")),
             "ble_address": self.config.read("ble_address"),
             "format_datetime": self.format_date,
+            "app_prefix": current_app.config["app_prefix"]
         }
 
         status = self.storage.fetch_status()

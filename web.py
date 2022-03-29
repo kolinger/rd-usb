@@ -13,6 +13,7 @@ import webbrowser
 
 from flask import Flask
 import socketio
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 from utils.config import Config, static_path, data_path
 from utils.storage import Storage
@@ -37,6 +38,7 @@ def parse_cli(open_browser=True, webview=False):
         parser.add_argument("--disable-gpu", action="store_true", default=False, help="Disable GPU rendering")
     else:
         parser.add_argument("--daemon", action="store_true", default=not open_browser, help="Do not launch web browser")
+        parser.add_argument("--prefix", default="/", help="If you want to reverse-proxy from path, like /rd-usb")
 
     return parser.parse_args()
 
@@ -48,9 +50,27 @@ def run(args=None, embedded=False):
     port = args.port
     daemon = "daemon" in args and args.daemon
 
+    if "prefix" in args:
+        prefix = args.prefix
+    else:
+        prefix = "/"
+    if not prefix.startswith("/"):
+        prefix = "/" + prefix
+    if len(prefix) > 1 and prefix.endswith("/"):
+        prefix = prefix[0:-1]
+
     app = Flask(__name__, static_folder=static_path)
     app.config["embedded"] = embedded
+    app.config["app_prefix"] = prefix
     app.register_blueprint(Index().register())
+
+    if prefix != "/":
+        def fallback(env, resp):
+            resp(b"200 OK", [(b"Content-Type", b"text/plain; charset=UTF-8")])
+            return [b"use '%s' instead" % prefix.encode("utf-8")]
+
+        app.config["APPLICATION_ROOT"] = prefix
+        app.wsgi_app = DispatcherMiddleware(fallback, {prefix: app.wsgi_app})
 
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -78,7 +98,10 @@ def run(args=None, embedded=False):
         Storage().init()
 
         sockets = socketio.Server(async_mode="threading", cors_allowed_origins="*")
-        app.wsgi_app = socketio.Middleware(sockets, app.wsgi_app)
+        socketio_path = "socket.io"
+        if len(prefix) > 1:
+            socketio_path = prefix[1:] + "/" + socketio_path
+        app.wsgi_app = socketio.Middleware(sockets, app.wsgi_app, socketio_path=socketio_path)
         sockets.register_namespace(Backend(args.on_receive, args.on_receive_interval))
 
         if not embedded:

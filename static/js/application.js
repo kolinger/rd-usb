@@ -110,7 +110,12 @@ ntdrt.application = {
     connection: function () {
         var self = this;
 
-        var socket = self.socket = io.connect(location.protocol + '//' + location.host + ':' + location.port);
+        var url = location.protocol + '//' + location.host;
+        var path = '/socket.io';
+        if (ntdrt.appPrefix.length > 1) {
+            path = ntdrt.appPrefix + path;
+        }
+        var socket = self.socket = io.connect(url, {path: path});
 
         var newConnection = false;
         socket.on('connecting', function () {
