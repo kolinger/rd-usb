@@ -1,8 +1,8 @@
 Flask~=2.0.1
 pendulum~=2.1.2
 pyserial~=3.5
-python-socketio~=5.4.0
-python-engineio~=4.2.1
+python-socketio~=5.5.2
+python-engineio~=4.3.1
 appdirs~=1.4.4
 
 bleak~=0.12.1
