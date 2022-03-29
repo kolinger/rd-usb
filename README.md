@@ -134,6 +134,55 @@ Example structure of JSON file:
 ]
 ```
 
+Reverse proxy
+--
+
+If you like to have HTTPS (or use reverse proxy for other reasons) then simple reverse proxy can be used.
+All common webservers can do this. Here are examples for nginx.
+
+At root:
+````
+server {
+	listen 443 ssl;
+	listen [::]:443 ssl;
+
+	ssl_certificate /your/certificate.crt;
+	ssl_certificate_key /your/certificate.key;
+
+	server_name rd-usb;
+
+	location / {
+		proxy_pass http://127.0.0.1:5000;
+	}
+}
+````
+
+In path:
+````
+server {
+	listen 443 ssl;
+	listen [::]:443 ssl;
+
+	ssl_certificate /your/certificate.crt;
+	ssl_certificate_key /your/certificate.key;
+
+	server_name domain.tld;
+
+	# your other things
+
+	location /rd-usb {
+		proxy_pass http://127.0.0.1:5000;
+	}
+}
+````
+
+When some prefix/path is used then it needs to be specified as argument `--prefix` when launching rd-usb.
+In this example `--prefix /rd-usb` is required resulting in something like `python3 app.py --prefix /rd-usb`.
+
+Note: `rd-usb` should not be exposed on untrusted network or to untrusted users. 
+Use [HTTP basic auth](https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/) 
+for example as authentication mechanism when running rd-usb at untrusted network.
+
 Development
 --
 
