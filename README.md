@@ -177,7 +177,7 @@ server {
 ````
 
 When some prefix/path is used then it needs to be specified as argument `--prefix` when launching rd-usb.
-In this example `--prefix /rd-usb` is required resulting in something like `python3 app.py --prefix /rd-usb`.
+In this example `--prefix /rd-usb` is required resulting in something like `python3 web.py --prefix /rd-usb`.
 
 Note: `rd-usb` should not be exposed on untrusted network or to untrusted users. 
 Use [HTTP basic auth](https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/) 
