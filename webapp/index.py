@@ -156,7 +156,7 @@ class Index:
             page="data",
         )
 
-    def prepare_pages(self, name, page, limit, count, blocks=10):
+    def prepare_pages(self, session_id, page, limit, count, blocks=10):
         first_page = 1
         related = 3
         last_page = int(ceil(count / limit))
@@ -172,7 +172,7 @@ class Index:
         for number in steps:
             pages.append({
                 "number": number,
-                "link": url_for("index.data", page=number, name=name),
+                "link": url_for("index.data", page=number, session=session_id),
                 "current": number == page,
             })
 
