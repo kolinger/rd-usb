@@ -10,6 +10,32 @@
             </select>
         </div>
         <div class="form-group">
+            <label class="control-label" for="auto_connect">Connect automatically</label>
+            <select class="form-control" id="auto_connect" name="auto_connect">
+                <option value="no"{% if setup["auto_connect"] == "no" %} selected{% endif %}>No</option>
+                <option value="yes"{% if setup["auto_connect"] == "yes" %} selected{% endif %}>Yes</option>
+            </select>
+            <div class="help-block">
+                Automatically connect to previously connected device when this application launches.
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="timeout">Timeout (in seconds)</label>
+            <input type="number" class="form-control" id="timeout" name="timeout" value="{{ setup["timeout"] }}" />
+            <div class="help-block">
+                How long to wait before giving up. Set to 0 to wait indefinitely.
+                Default {{ default_timeout }} seconds.
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="retry_count">Retry on error (number of times)</label>
+            <input type="number" class="form-control" id="retry_count" name="retry_count" value="{{ setup["retry_count"] }}" />
+            <div class="help-block">
+                How many times to retry operation before giving up. Set to 0 to retry indefinitely.
+                Default: {{ default_retry_count }} times.
+            </div>
+        </div>
+        <div class="form-group">
             <button type="submit" name="do" class="btn btn-default">
                 Save
             </button>

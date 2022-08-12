@@ -15,6 +15,7 @@ from utils.config import Config, static_path
 from utils.formatting import Format
 from utils.storage import Storage
 from utils.version import version
+from webapp.backend import Daemon
 
 
 class Index:
@@ -252,12 +253,24 @@ class Index:
 
     def render_setup(self):
         self.init()
-        setup = self.config.read("setup")
+        setup: dict = self.config.read("setup")
         if not isinstance(setup, dict):
             setup = {}
 
+        defaults = {
+            "theme": "light",
+            "auto_connect": "no",
+            "timeout": Daemon.DEFAULT_TIMEOUT,
+            "retry_count": Daemon.DEFAULT_RETRY_COUNT,
+        }
+
+        for name, default_value in defaults.items():
+            if name not in setup or setup[name] is None or setup[name] == "":
+                setup[name] = default_value
+
         if "do" in request.form:
-            setup["theme"] = request.form["theme"]
+            for name in defaults.keys():
+                setup[name] = request.form[name]
             self.config.write("setup", setup)
             flash("Settings were successfully saved", "success")
             return redirect(url_for("index.setup"))
@@ -265,7 +278,9 @@ class Index:
         return render_template(
             "setup.html",
             setup=setup,
-            page="setup"
+            page="setup",
+            default_timeout=Daemon.DEFAULT_TIMEOUT,
+            default_retry_count=Daemon.DEFAULT_RETRY_COUNT,
         )
 
     def render_ble(self):

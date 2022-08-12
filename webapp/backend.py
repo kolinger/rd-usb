@@ -7,12 +7,13 @@ import subprocess
 import sys
 from threading import Thread
 from time import time, sleep
+from timeit import default_timer as timer
 import traceback
 
 import pendulum
 from serial.tools.list_ports import comports
 from socketio import Namespace
-from timeit import default_timer as timer
+
 from interfaces.tc import TcBleInterface
 from interfaces.wrapper import Wrapper
 from utils.config import Config
@@ -27,6 +28,14 @@ class Backend(Namespace):
     def __init__(self, on_receive, on_receive_interval):
         super().__init__()
         self.daemon = Daemon(self, on_receive, on_receive_interval)
+        self.handle_auto_connect()
+
+    def handle_auto_connect(self):
+        config = Config()
+        setup = config.read("setup")
+        auto_connect = self.daemon.parse_setup_option(setup, "auto_connect", str, "no")
+        if auto_connect == "yes":
+            self.on_open(None, config.data)
 
     def init(self):
         self.config = Config()
@@ -34,7 +43,9 @@ class Backend(Namespace):
     def on_open(self, sid, data):
         self.init()
 
-        data = json.loads(data)
+        if isinstance(data, str):
+            data = json.loads(data)
+
         self.config.write("version", data["version"])
 
         if "port" in data:
@@ -146,8 +157,16 @@ class Backend(Namespace):
         self.emit("disconnecting")
         self.daemon.stop()
 
+    def emit(self, event, data=None, to=None, room=None, skip_sid=None, namespace=None, callback=None):
+        if self.server is None:
+            return
+        super().emit(event, data=data, to=to, room=room, skip_sid=skip_sid, namespace=namespace, callback=callback)
+
 
 class Daemon:
+    DEFAULT_TIMEOUT = 60
+    DEFAULT_RETRY_COUNT = 10
+
     running = None
     thread = None
     storage = None
@@ -155,6 +174,8 @@ class Daemon:
     interface = None
     buffer = None
     buffer_expiration = None
+    timeout = None
+    retry_count = None
 
     def __init__(self, backend, on_receive, on_receive_interval):
         self.backed = backend
@@ -188,6 +209,10 @@ class Daemon:
         self.config = Config()
 
         self.interface = Wrapper()
+
+        setup = self.config.read("setup")
+        self.timeout = self.parse_setup_option(setup, "timeout", int, self.DEFAULT_TIMEOUT)
+        self.retry_count = self.parse_setup_option(setup, "retry_count", int, self.DEFAULT_RETRY_COUNT)
 
         try:
             self.log("Connecting")
@@ -283,10 +308,12 @@ class Daemon:
         }))
 
     def retry(self, callback):
-        timeout = time() + 60
-        count = 10
+        timeout = self.timeout
+        deadline = time() + timeout
+        count = self.retry_count
+
         reconnect = False
-        while True:
+        while self.running:
             try:
                 if reconnect:
                     self.interface.disconnect()
@@ -300,12 +327,28 @@ class Daemon:
             except:
                 count -= 1
                 logging.exception(sys.exc_info()[0])
-                if timeout <= time() or count <= 0:
+
+                if self.timeout > 0 and deadline <= time():
                     raise
+
+                if self.retry_count > 0 and count <= 0:
+                    raise
+
+                condition = []
+                if self.retry_count > 0:
+                    condition.append("%s of %s" % (self.retry_count - count, self.retry_count))
+                if self.timeout > 0:
+                    timestamp = pendulum.from_timestamp(deadline).in_tz("local").format("YYYY-MM-DD HH:mm:ss")
+                    condition.append("until %s" % timestamp)
+
+                if len(condition):
+                    condition = " and ".join(condition)
                 else:
-                    self.log("operation failed, retrying")
-                    self.emit("log", traceback.format_exc())
-                    reconnect = True
+                    condition = "indefinitely"
+
+                self.log("operation failed, retrying %s" % condition)
+                self.emit("log", traceback.format_exc())
+                reconnect = True
 
     def emit(self, event, data=None):
         if event == "log":
@@ -317,3 +360,11 @@ class Daemon:
     def log(self, message):
         prefix = pendulum.now().format("YYYY-MM-DD HH:mm:ss") + " - "
         self.emit("log", prefix + message + "\n")
+
+    def parse_setup_option(self, setup, name, data_type, default=None):
+        if isinstance(setup, dict) and name in setup:
+            try:
+                return data_type(setup[name])
+            except (ValueError, TypeError):
+                pass
+        return default
