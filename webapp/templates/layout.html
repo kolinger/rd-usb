@@ -99,6 +99,8 @@
                         <option value="3"{% if rate == "3.0" %} selected{% endif %}>3s</option>
                         <option value="5"{% if rate == "5.0" %} selected{% endif %}>5s</option>
                         <option value="10"{% if rate == "10.0" %} selected{% endif %}>10s</option>
+                        <option value="60"{% if rate == "60.0" %} selected{% endif %}>1m</option>
+                        <option value="600"{% if rate == "600.0" %} selected{% endif %}>10m</option>
                     </select>
                 </div>
                 <button type="submit" class="btn btn-default">{{ connect_button }}</button>
