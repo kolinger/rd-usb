@@ -342,7 +342,7 @@ class Daemon:
                     condition.append("until %s" % timestamp)
 
                 if len(condition):
-                    condition = " and ".join(condition)
+                    condition = " or ".join(condition)
                 else:
                     condition = "indefinitely"
 
