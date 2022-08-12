@@ -6,6 +6,7 @@ from appdirs import user_data_dir, user_cache_dir
 
 _data_path = None
 _cache_path = None
+_args = None
 
 if getattr(sys, "frozen", False):
     static_path = sys._MEIPASS + "/static"
@@ -16,9 +17,15 @@ else:
 def initialize_paths_from_args(args):
     global _data_path
     global _cache_path
+    global _args
+    _args = args
     if args.data_dir:
         _data_path = args.data_dir
         _cache_path = os.path.join(_data_path, "cache")
+
+
+def get_args():
+    return _args
 
 
 def get_data_path():
