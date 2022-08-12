@@ -7,7 +7,7 @@ from time import time
 
 import pendulum
 
-from utils.config import data_path
+from utils.config import get_data_path
 from utils.converter import Converter
 
 
@@ -17,7 +17,7 @@ class Storage:
 
     def __init__(self):
         self.parameters = {
-            "database": data_path + "/data.db",
+            "database": os.path.join(get_data_path(), "data.db"),
             "isolation_level": None,
         }
         self.converter = Converter()

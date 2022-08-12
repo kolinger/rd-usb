@@ -92,6 +92,12 @@ Tables
 
 ![tables](screenshots/tables.png)
 
+Custom data directory
+--
+Custom data directory can be specified with `--data-dir` option.
+
+For example `rd-usb.exe --data-dir C:/rd-usb` will place all configuration and data files in `C:/rd-usb` directory.
+
 Custom export
 --
 

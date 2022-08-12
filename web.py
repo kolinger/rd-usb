@@ -15,7 +15,7 @@ from flask import Flask
 import socketio
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-from utils.config import Config, static_path, data_path
+from utils.config import Config, static_path, get_data_path, initialize_paths_from_args
 from utils.storage import Storage
 from webapp.backend import Backend
 from webapp.index import Index
@@ -34,6 +34,7 @@ def parse_cli(open_browser=True, webview=False):
     parser.add_argument("port", nargs="?", type=int, default=5000, help="Port for web server to listen on")
     parser.add_argument("--on-receive", help="Call this program/script when new measurements are received")
     parser.add_argument("--on-receive-interval", type=int, default=60, help="Interval for --on-receive (in seconds)")
+    parser.add_argument("--data-dir", type=str, help="Where to store configuration and user data files")
     if webview:
         parser.add_argument("--disable-gpu", action="store_true", default=False, help="Disable GPU rendering")
     else:
@@ -46,6 +47,9 @@ def parse_cli(open_browser=True, webview=False):
 def run(args=None, embedded=False):
     if not args:
         args = parse_cli()
+
+    if not embedded:
+        initialize_paths_from_args(args)
 
     port = args.port
     daemon = "daemon" in args and args.daemon
@@ -82,7 +86,7 @@ def run(args=None, embedded=False):
     logger.addHandler(console)
 
     if not app.debug:
-        file = TimedRotatingFileHandler(data_path + "/error.log", when="w0", backupCount=14)
+        file = TimedRotatingFileHandler(get_data_path() + "/error.log", when="w0", backupCount=14)
         file.setLevel(logging.ERROR)
         file.setFormatter(formatter)
         logger.addHandler(file)

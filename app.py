@@ -7,20 +7,14 @@ from threading import Thread
 from time import sleep
 from urllib import request
 
-from appdirs import user_cache_dir
 import webview
 from webview.platforms.cef import settings, command_line_switches
 
-from utils.config import data_path, Config
+from utils.config import Config, get_data_path, get_cache_path, initialize_paths_from_args
 from utils.version import version
 from web import run, parse_cli
 
 debug = "FLASK_DEBUG" in os.environ
-
-settings.update({
-    "log_file": data_path + "/cef.log",
-    "cache_path": user_cache_dir("rd-usb", False),
-})
 
 
 class Webview:
@@ -109,6 +103,13 @@ if __name__ == "__main__":
 
         def callback():
             run(args, embedded=True)
+
+        initialize_paths_from_args(args)
+
+        settings.update({
+            "log_file": os.path.join(get_data_path(), "cef.log"),
+            "cache_path": get_cache_path(),
+        })
 
         url = "http://%s:%s" % ("127.0.0.1", args.port)
         view = Webview(url)
