@@ -97,6 +97,8 @@ Custom data directory
 Custom data directory can be specified with `--data-dir` option.
 
 For example `rd-usb.exe --data-dir C:/rd-usb` will place all configuration and data files in `C:/rd-usb` directory.
+This can be used together with shortcut, just make sure you escape path with quotes properly, for example: 
+`"C:\your\path\rd-usb.exe" --data-dir "C:\your\path\data"`.
 
 Custom export
 --
