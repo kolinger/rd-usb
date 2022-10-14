@@ -259,7 +259,8 @@ ntdrt.application = {
         }
     },
 
-    chart: null,
+    chartLeft: null,
+    chartRight: null,
     left_axis: null,
     right_axis: null,
     chart_buffer: [],
@@ -275,11 +276,11 @@ ntdrt.application = {
                     counter++;
                 });
 
-                if (self.chart) {
+                if (self.chartLeft && self.chartRight) {
                     self.chart_buffer.push(data);
 
                     // flush less often for huge datasets to minimize lag
-                    var chart_size = self.chart.data.length;
+                    var chart_size = self.chartLeft.data.length;
                     var buffer_size = self.chart_buffer.length;
                     if (chart_size > 1000 && buffer_size < 5) {
                         return;
@@ -291,9 +292,10 @@ ntdrt.application = {
                         return;
                     }
 
-                    for (var index in self.chart_buffer) {
-                        data = self.chart_buffer[index];
-                        try {
+                    try {
+                        var items = [];
+                        for (var index in self.chart_buffer) {
+                            data = self.chart_buffer[index];
                             var item = {
                                 date: data['graph']['timestamp'],
                             };
@@ -307,11 +309,15 @@ ntdrt.application = {
                                 push = true;
                             }
                             if (push) {
-                                self.chart.addData([item]);
+                                items.push(item);
                             }
-                        } catch (e) {
-                            // ignore
                         }
+                        if (items.length) {
+                            self.chartLeft.data.pushAll(items);
+                            self.chartRight.data.pushAll(items);
+                        }
+                    } catch (e) {
+                        // ignore
                     }
                     self.chart_buffer = [];
                 }
@@ -321,12 +327,12 @@ ntdrt.application = {
 
     graph: function () {
         var self = this;
-        var chart = null;
+        var chartRoot = null;
         var graph = $('#graph');
         if (graph.length) {
             var create = function () {
-                if (chart) {
-                    chart.dispose();
+                if (chartRoot) {
+                    chartRoot.dispose();
                 }
 
                 graph.parent().find('.loading').show();
@@ -399,152 +405,193 @@ ntdrt.application = {
                 url += '&colors=' + colorsMode;
 
                 $.get(url, function (data) {
-                    var config = {
-                        'data': data,
-                        'xAxes': [{
-                            'type': 'DateAxis',
-                            'title': {
-                                'text': 'Time'
-                            }
-                        }],
-                        'yAxes': [
-                            {
-                                'id': 'leftAxis',
-                                'type': 'ValueAxis',
-                                'title': {
-                                    'fill': left_color,
-                                    'text': left_name,
-                                    'fontWeight': 'bold'
-                                },
-                                'numberFormatter': {
-                                    'type': 'NumberFormatter',
-                                    'numberFormat': '#,###.## \' ' + left_unit + '\'',
-                                    'forceCreate': true
-                                },
-                                'tooltip': {
-                                    'disabled': true
-                                },
-                                'renderer': {
-                                    'labels': {
-                                        'fill': left_color,
-                                        'fontWeight': 'bold'
-                                    }
-                                },
-                                'min': 0
-                            },
-                            {
-                                'id': 'rightAxis',
-                                'type': 'ValueAxis',
-                                'title': {
-                                    'fill': right_color,
-                                    'text': right_name,
-                                    'fontWeight': 'bold'
-                                },
-                                'numberFormatter': {
-                                    'type': 'NumberFormatter',
-                                    'numberFormat': '#,###.## \' ' + right_unit + '\'',
-                                    'forceCreate': true
-                                },
-                                'tooltip': {
-                                    'disabled': true
-                                },
-                                'renderer': {
-                                    'opposite': true,
-                                    'labels': {
-                                        'fill': right_color,
-                                        'fontWeight': 'bold'
-                                    }
-                                },
-                                'min': 0
-                            }
-                        ],
-                        'series': [
-                            {
-                                'id': 'left',
-                                'type': 'LineSeries',
-                                'stroke': left_color,
-                                'strokeWidth': 2,
-                                'dataFields': {
-                                    'dateX': 'date',
-                                    'valueY': 'left'
-                                },
-                                'tooltipText': '{left} ' + left_unit,
-                                'tooltip': {
-                                    'getFillFromObject': false,
-                                    'background': {
-                                        'fill': left_color,
-                                    },
-                                    'label': {
-                                        'fill': '#fff'
-                                    }
-                                }
-                            },
-                            {
-                                'id': 'right',
-                                'type': 'LineSeries',
-                                'stroke': right_color,
-                                'strokeWidth': 2,
-                                'dataFields': {
-                                    'dateX': 'date',
-                                    'valueY': 'right'
-                                },
-                                'yAxis': 'rightAxis',
-                                'tooltipText': '{right} ' + right_unit,
-                                'tooltip': {
-                                    'getFillFromObject': false,
-                                    'background': {
-                                        'fill': right_color,
-                                    },
-                                    'label': {
-                                        'fill': '#fff'
-                                    }
-                                }
-                            }
-                        ],
-                        'cursor': {
-                            'type': 'XYCursor'
-                        },
-                        'numberFormatter': {
-                            'numberFormat': '#,###.####'
-                        }
-                    };
-
                     var xAxisTextColor = null;
                     var axisLineColor = null;
                     var cursorColor = null;
                     switch (ntdrt.theme) {
                         case 'midnight':
-                            xAxisTextColor = axisLineColor = '#c8c8c8';
+                            xAxisTextColor = '#c8c8c8';
+                            axisLineColor = '#464646';
                             cursorColor = '#65ff00';
                             break;
 
                         case 'dark':
-                            xAxisTextColor = axisLineColor = cursorColor = '#c8c8c8';
+                            xAxisTextColor = '#c8c8c8';
+                            axisLineColor = '#464646';
+                            cursorColor = '#c8c8c8';
                             break;
                     }
+
+                    var root = chartRoot = am5.Root.new(graph[0]);
+                    var chart = am5xy.XYChart.new(root, {});
+                    root.container.children.push(chart);
+                    root.numberFormatter.set('numberFormat', "####.####");
+
+                    var xAxis = chart.xAxes.push(
+                        am5xy.DateAxis.new(root, {
+                            renderer: am5xy.AxisRendererX.new(root, {}),
+                            groupData: true,
+                            groupCount: 10000,
+                            baseInterval: {
+                                timeUnit: 'second',
+                                count: 1
+                            },
+                        })
+                    );
                     if (xAxisTextColor) {
-                        config['xAxes'][0]['title']['fill'] = xAxisTextColor;
-                        config['xAxes'][0]['renderer'] = {
-                            'labels': {'fill': xAxisTextColor},
-                            'grid': {'template': {'stroke': xAxisTextColor}},
-                        };
+                        xAxis.get('renderer').labels.template.setAll({
+                            fill: xAxisTextColor
+                        });
                     }
                     if (axisLineColor) {
-                        config['yAxes'][0]['renderer']['grid'] = {'template': {'stroke': axisLineColor}};
-                        config['yAxes'][1]['renderer']['grid'] = {'template': {'stroke': axisLineColor}};
+                        xAxis.get('renderer').grid.template.setAll({
+                            stroke: axisLineColor
+                        });
                     }
-                    if (cursorColor) {
-                        config['cursor']['lineX'] = {'stroke': cursorColor};
-                        config['cursor']['lineY'] = {'stroke': cursorColor};
+                    var xLabel = xAxis.children.push(
+                        am5.Label.new(root, {
+                            text: 'Time',
+                            x: am5.p50,
+                            centerX: am5.p50
+                        })
+                    );
+                    if (xAxisTextColor) {
+                        xLabel.setAll({
+                            fill: xAxisTextColor
+                        });
                     }
 
-                    self.chart = chart = am4core.createFromConfig(config, graph[0], 'XYChart');
-
-                    self.chart.language.locale['_thousandSeparator'] = '';
-
-                    chart.events.on('ready', function () {
-                        graph.parent().find('.loading').hide();
+                    var yLeftAxis = chart.yAxes.push(
+                        am5xy.ValueAxis.new(root, {
+                            renderer: am5xy.AxisRendererY.new(root, {}),
+                            numberFormat: '####.## \' ' + left_unit + '\'',
+                            min: 0
+                        })
+                    );
+                    yLeftAxis.get('renderer').labels.template.setAll({
+                        fill: left_color,
+                        fontWeight: 700
                     });
+                    if (axisLineColor) {
+                        yLeftAxis.get('renderer').grid.template.setAll({
+                            stroke: axisLineColor
+                        });
+                    }
+                    yLeftAxis.children.push(
+                        am5.Label.new(root, {
+                            text: left_name,
+                            rotation: -90,
+                            y: am5.p50,
+                            x: -30,
+                            centerX: am5.p50,
+                            fill: left_color,
+                            fontWeight: 700
+                        })
+                    );
+                    var leftTooltip = am5.Tooltip.new(root, {
+                        getFillFromSprite: false,
+                        autoTextColor: false,
+                        labelText: '{valueY} ' + left_unit
+                    });
+                    leftTooltip.get('background').setAll({
+                        fill: left_color,
+                    });
+                    leftTooltip.label.setAll({
+                        fill: '#fff'
+                    });
+                    var leftSeries = self.chartLeft = chart.series.push(
+                        am5xy.LineSeries.new(root, {
+                            xAxis: xAxis,
+                            yAxis: yLeftAxis,
+                            valueXField: 'date',
+                            valueYField: 'left',
+                            stroke: left_color,
+                            tooltip: leftTooltip
+                        })
+                    );
+                    leftSeries.strokes.template.setAll({
+                        strokeWidth: 2
+                    });
+                    leftSeries.data.setAll(data);
+
+                    var yRightAxis = chart.yAxes.push(
+                        am5xy.ValueAxis.new(root, {
+                            renderer: am5xy.AxisRendererY.new(root, {
+                                opposite: true
+                            }),
+                            numberFormat: '####.## \' ' + right_unit + '\'',
+                            min: 0
+                        })
+                    );
+                    yRightAxis.get('renderer').labels.template.setAll({
+                        fill: right_color,
+                        fontWeight: 700
+                    });
+                    if (axisLineColor) {
+                        yRightAxis.get('renderer').grid.template.setAll({
+                            stroke: axisLineColor
+                        });
+                    }
+                    yRightAxis.children.push(
+                        am5.Label.new(root, {
+                            text: right_name,
+                            rotation: 90,
+                            y: am5.p50,
+                            centerX: am5.p50,
+                            fill: right_color,
+                            fontWeight: 700
+                        })
+                    );
+                    var rightTooltip = am5.Tooltip.new(root, {
+                        getFillFromSprite: false,
+                        autoTextColor: false,
+                        labelText: '{valueY} ' + right_unit
+                    });
+                    rightTooltip.get('background').setAll({
+                        fill: right_color,
+                    });
+                    rightTooltip.label.setAll({
+                        fill: '#fff'
+                    });
+                    var rightSeries = self.chartRight = chart.series.push(
+                        am5xy.LineSeries.new(root, {
+                            xAxis: xAxis,
+                            yAxis: yRightAxis,
+                            valueXField: 'date',
+                            valueYField: 'right',
+                            stroke: right_color,
+                            tooltip: rightTooltip
+                        })
+                    );
+                    rightSeries.strokes.template.setAll({
+                        strokeWidth: 2
+                    });
+                    rightSeries.data.setAll(data);
+
+                    var cursor = am5xy.XYCursor.new(root, {
+                        behavior: 'zoomX'
+                    });
+                    if (cursorColor) {
+                        cursor.lineX.setAll({
+                            stroke: cursorColor
+                        });
+                        cursor.lineY.setAll({
+                            stroke: cursorColor
+                        });
+                    }
+                    chart.set('cursor', cursor);
+
+                    var timeout = null;
+                    var onFrameEnded = function () {
+                        if (timeout) {
+                            clearTimeout(timeout);
+                        }
+                        timeout = setTimeout(function () {
+                            root.events.off('frameended', onFrameEnded);
+                            graph.parent().find('.loading').hide();
+                        }, 100)
+                    };
+                    root.events.on('frameended', onFrameEnded);
                 });
             };
 
