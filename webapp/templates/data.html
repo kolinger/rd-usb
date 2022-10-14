@@ -12,7 +12,8 @@
             </select>
         </div>
         <button type="submit" class="btn btn-default">Select</button>
-        <button type="submit" class="btn btn-default" name="export">Export</button>
+        <button type="submit" class="btn btn-default" name="export">Export CSV</button>
+        <a href="{{ url_for("index.csv_import") }}" class="btn btn-default">Import CSV</a>
         <button type="submit" class="btn btn-danger" name="destroy" data-confirm="This will delete all log data for the currently selected session: Are you sure?">Delete</button>
         <a href="{{ url_for("index.tc66c_import") }}" class="btn btn-default">Import TC66C recording</a>
     </form>

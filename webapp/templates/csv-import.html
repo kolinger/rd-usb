@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h3 style="margin:0 0 20px 0;">CSV import</h3>
+
+    <div class="alert alert-info">
+        This functionality can import CSV files created by this application (via Export CSV feature).
+        You can also create your own CSV files, but they are required to follow header/column naming and data format
+        according to what Export CSV feature creates.
+    </div>
+
+    {% for message in messages %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="form-inline">
+        <form action="" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="control-label" for="session_name">Session name</label>
+                <input type="text" class="form-control" name="session_name" id="session_name" value="{{ session_name }}" />
+            </div>
+            <div class="form-group">
+                <label class="control-label" for="version">Version</label>
+                <select class="form-control" name="version" id="version">
+                    <option value="UM34C"{% if import_version == "UM34C" %} selected{% endif %}>UM34C</option>
+                    <option value="UM25C"{% if import_version == "UM25C" %} selected{% endif %}>UM25C</option>
+                    <option value="UM24C"{% if import_version == "UM24C" %} selected{% endif %}>UM24C</option>
+                    <option value="TC66C"{% if import_version == "TC66C" %} selected{% endif %}>TC66C</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="control-label" for="file">CSV file</label>
+                <div class="input-group">
+                    <input type="file" name="file" id="file" />
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="submit" name="do" class="btn btn-default" data-import>
+                    Import
+                </button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

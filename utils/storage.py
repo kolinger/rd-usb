@@ -22,8 +22,11 @@ class Storage:
         }
         self.converter = Converter()
 
-    def connect(self):
-        connection = sqlite3.connect(**self.parameters)
+    def connect(self, extra_parameters=None):
+        parameters = self.parameters
+        if extra_parameters:
+            parameters.update(extra_parameters)
+        connection = sqlite3.connect(**parameters)
         connection.row_factory = self.row_factory
         return connection
 
@@ -119,6 +122,16 @@ class Storage:
                 cursor.execute("UPDATE version SET version = 2")
 
     def store_measurement(self, data):
+        with closing(self.connect()) as sqlite:
+            self._insert_measurement(sqlite, data)
+
+    def store_measurements(self, items):
+        with closing(self.connect({"isolation_level": "DEFERRED"})) as sqlite:
+            for data in items:
+                self._insert_measurement(sqlite, data)
+            sqlite.commit()
+
+    def _insert_measurement(self, sqlite, data):
         if data is None:
             return
 
@@ -134,9 +147,8 @@ class Storage:
         placeholders = ", ".join(placeholders)
         values = tuple(values)
 
-        with closing(self.connect()) as sqlite:
-            cursor = sqlite.cursor()
-            cursor.execute("INSERT INTO measurements (" + columns + ") VALUES (" + placeholders + ")", values)
+        cursor = sqlite.cursor()
+        cursor.execute("INSERT INTO measurements (" + columns + ") VALUES (" + placeholders + ")", values)
 
     def destroy_measurements(self, session):
         with closing(self.connect()) as sqlite:

@@ -2,6 +2,7 @@ import csv
 import io
 from math import ceil, floor
 import os
+import pathlib
 from time import time
 import traceback
 
@@ -9,9 +10,10 @@ from flask import url_for, request, jsonify, redirect, flash, make_response, cur
 from flask.blueprints import Blueprint
 from flask.templating import render_template
 import pendulum
+from werkzeug.utils import secure_filename
 
 from interfaces.tc import TcSerialInterface
-from utils.config import Config, static_path
+from utils.config import Config, static_path, get_data_path
 from utils.formatting import Format
 from utils.storage import Storage
 from utils.version import version
@@ -33,6 +35,7 @@ class Index:
         blueprint.add_url_rule("/ble", "ble", self.render_ble)
         blueprint.add_url_rule("/serial", "serial", self.render_serial)
         blueprint.add_url_rule("/tc66c-import", "tc66c_import", self.render_tc66c_import, methods=["GET", "POST"])
+        blueprint.add_url_rule("/csv-import", "csv_import", self.render_csv_import, methods=["GET", "POST"])
         blueprint.context_processor(self.fill)
         return blueprint
 
@@ -342,7 +345,8 @@ class Index:
     def do_tc66c_import(self, name, period=1, calculate=False):
         messages = []
         if self.import_in_progress:
-            return "Import is already running"
+            messages.append("Import is already running")
+            return messages
         self.import_in_progress = True
         serial_timeout = int(self.config.read("serial_timeout", 10))
         interface = TcSerialInterface(self.config.read("port"), serial_timeout)
@@ -405,6 +409,135 @@ class Index:
             messages.append(message)
         finally:
             interface.disconnect()
+            self.import_in_progress = False
+
+        return messages
+
+    def render_csv_import(self):
+        self.init()
+        self.fill_config_from_parameters()
+
+        messages = []
+
+        session_name = "My CSV import"
+        version = self.config.read("version")
+        if "do" in request.form:
+            session_name = request.form.get("session_name")
+            if not session_name:
+                messages.append("Please provide session name")
+
+            version = request.form.get("version")
+            if not version:
+                messages.append("Please provide version")
+
+            uploaded_file = request.files.get("file")
+            if not uploaded_file or uploaded_file.filename == "":
+                messages.append("Please select a CSV file")
+            else:
+                extension = pathlib.Path(uploaded_file.filename).suffix[1:].lower()
+                if extension != "csv":
+                    messages.append("Selected file '%s' is not a CSV file" % uploaded_file.filename)
+
+            if len(messages) == 0:
+                messages.extend(self.do_csv_import(session_name, version, uploaded_file))
+                if len(messages) == 0:
+                    return redirect(url_for("index.graph"))
+
+        return render_template(
+            "csv-import.html",
+            messages=messages,
+            session_name=session_name,
+            import_version=version,
+            page="data"
+        )
+
+    def do_csv_import(self, session_name, version, uploaded_file):
+        temp_dir = os.path.join(get_data_path(), "temp")
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+
+        filename = secure_filename(uploaded_file.filename)
+        file_path = os.path.join(temp_dir, filename)
+        uploaded_file.save(file_path)
+
+        messages = []
+        if self.import_in_progress:
+            messages.append("Import is already running")
+            return messages
+        self.import_in_progress = True
+
+        self.storage.fetch_status()
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                csv_reader = csv.reader(file, delimiter=",")
+
+                header_expected = True
+                mapping: dict = {}
+                format = Format(version)
+                session_id = None
+                row_number = 0
+                chunk = []
+                for row in csv_reader:
+                    row_number += 1
+                    if header_expected:
+                        header_expected = False
+                        index = 0
+                        for name in row:
+                            field = format.field_name_reverse(name)
+                            if field is not None:
+                                mapping[field] = index
+                            index += 1
+
+                        if "time" not in mapping:
+                            messages.append(
+                                "Invalid CSV layout: time column not found, make sure your column names are correct"
+                            )
+                            return messages
+                    else:
+                        if session_id is None:
+                            session_id = self.storage.create_session(session_name, version)
+
+                        time_index = mapping["time"]
+                        try:
+                            time = pendulum.from_format(row[time_index], format.time_format)
+                        except ValueError:
+                            messages.append("Warning: unable to parse time: %s, skipping row: %s" % (
+                                row[time_index], row_number
+                            ))
+                            continue
+
+                        data = {
+                            "timestamp": time.timestamp(),
+                            "voltage": 0,
+                            "current": 0,
+                            "power": 0,
+                            "temperature": 0,
+                            "data_plus": 0,
+                            "data_minus": 0,
+                            "mode_id": 0,
+                            "mode_name": None,
+                            "accumulated_current": 0,
+                            "accumulated_power": 0,
+                            "accumulated_time": 0,
+                            "resistance": 0,
+                            "session_id": session_id,
+                        }
+                        for field in data.keys():
+                            if field in mapping:
+                                column_index = mapping[field]
+                                data[field] = float(row[column_index])
+
+                        chunk.append(data)
+
+                        if len(chunk) >= 1000:
+                            self.storage.store_measurements(chunk)
+                            chunk = []
+
+                if len(chunk):
+                    self.storage.store_measurements(chunk)
+
+            os.remove(file_path)
+        finally:
             self.import_in_progress = False
 
         return messages

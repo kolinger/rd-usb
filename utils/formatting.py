@@ -6,6 +6,7 @@ from utils.usb import decode_usb_data_lines
 
 
 class Format:
+    time_format = "YYYY-MM-DD HH:mm:ss"
     table_fields = ["time", "voltage", "current", "power", "temperature", "data", "mode", "accumulated", "resistance"]
     graph_fields = [
         "timestamp", "voltage", "current", "power", "temperature",
@@ -41,7 +42,7 @@ class Format:
     def time(self, data):
         time = pendulum.from_timestamp(data["timestamp"])
         time = time.in_tz("local")
-        return time.format("YYYY-MM-DD HH:mm:ss")
+        return time.format(self.time_format)
 
     def timestamp(self, data):
         return data["timestamp"] * 1000
@@ -95,6 +96,13 @@ class Format:
         if field in self.field_names:
             return self.field_names[field]
         return field
+
+    def field_name_reverse(self, alias):
+        for field_name, field_alias in self.field_names.items():
+            if field_alias == alias:
+                return field_name
+        print(alias)
+        return None
 
     def format_value(self, data, name):
         value = data[name]

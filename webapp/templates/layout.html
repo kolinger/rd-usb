@@ -55,6 +55,7 @@
             <form class="navbar-form navbar-right setup" id="connect">
                 <div class="form-group" id="status">{{ status }}</div>
                 <div class="form-group">
+                    <!-- don't forget to update csv-import.html too if required -->
                     <select class="form-control" name="version" {% if connect_disabled %}disabled {% endif %}>
                         <option value="UM34C"{% if version == "UM34C" %} selected{% endif %}>UM34C</option>
                         <option value="UM25C"{% if version == "UM25C" %} selected{% endif %}>UM25C</option>
