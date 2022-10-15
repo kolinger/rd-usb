@@ -404,6 +404,16 @@ ntdrt.application = {
                 url += '&right_axis=' + right_axis;
                 url += '&colors=' + colorsMode;
 
+                var loadingDots = $('.graph .loading [data-dots]');
+                var loadingTimer = setInterval(function () {
+                    var count = loadingDots.text().length;
+                    count++;
+                    if (count > 3) {
+                        count = 0;
+                    }
+                    loadingDots.text('.'.repeat(count));
+                }, 500);
+
                 $.get(url, function (data) {
                     var xAxisTextColor = null;
                     var axisLineColor = null;
@@ -427,6 +437,7 @@ ntdrt.application = {
                     root.container.children.push(chart);
                     root.numberFormatter.set('numberFormat', "####.####");
 
+                    // X axis
                     var xAxis = chart.xAxes.push(
                         am5xy.DateAxis.new(root, {
                             renderer: am5xy.AxisRendererX.new(root, {}),
@@ -436,6 +447,44 @@ ntdrt.application = {
                                 timeUnit: 'second',
                                 count: 1
                             },
+                            gridIntervals: [
+                                {timeUnit: 'second', count: 1},
+                                {timeUnit: 'second', count: 2},
+                                {timeUnit: 'second', count: 5},
+                                {timeUnit: 'second', count: 10},
+                                {timeUnit: 'second', count: 30},
+                                {timeUnit: 'minute', count: 1},
+                                {timeUnit: 'minute', count: 2},
+                                {timeUnit: 'minute', count: 5},
+                                {timeUnit: 'minute', count: 10},
+                                {timeUnit: 'minute', count: 15},
+                                {timeUnit: 'minute', count: 30},
+                                {timeUnit: 'hour', count: 1},
+                                {timeUnit: 'hour', count: 2},
+                                {timeUnit: 'hour', count: 3},
+                                {timeUnit: 'hour', count: 6},
+                                {timeUnit: 'hour', count: 12},
+                                {timeUnit: 'day', count: 1},
+                                {timeUnit: 'day', count: 2},
+                                {timeUnit: 'day', count: 3},
+                                {timeUnit: 'day', count: 4},
+                                {timeUnit: 'day', count: 5},
+                                {timeUnit: 'day', count: 6},
+                                {timeUnit: 'week', count: 1},
+                                {timeUnit: 'month', count: 1},
+                                {timeUnit: 'year', count: 1},
+                            ],
+                            tooltip: am5.Tooltip.new(root, {}),
+                            tooltipDateFormats: {
+                                millisecond: 'HH:mm:ss.SSS',
+                                second: 'HH:mm:ss',
+                                minute: 'HH:mm',
+                                hour: 'HH:mm',
+                                day: 'yyyy-MM-dd',
+                                week: 'yyyy-MM-dd',
+                                month: 'yyyy-MM',
+                                year: 'yyyy'
+                            }
                         })
                     );
                     if (xAxisTextColor) {
@@ -461,11 +510,13 @@ ntdrt.application = {
                         });
                     }
 
+                    // left Y axis
                     var yLeftAxis = chart.yAxes.push(
                         am5xy.ValueAxis.new(root, {
                             renderer: am5xy.AxisRendererY.new(root, {}),
                             numberFormat: '####.## \' ' + left_unit + '\'',
-                            min: 0
+                            min: 0,
+                            tooltip: am5.Tooltip.new(root, {})
                         })
                     );
                     yLeftAxis.get('renderer').labels.template.setAll({
@@ -477,17 +528,18 @@ ntdrt.application = {
                             stroke: axisLineColor
                         });
                     }
-                    yLeftAxis.children.push(
+                    yLeftAxis.children.unshift(
                         am5.Label.new(root, {
                             text: left_name,
                             rotation: -90,
                             y: am5.p50,
-                            x: -30,
                             centerX: am5.p50,
                             fill: left_color,
                             fontWeight: 700
                         })
                     );
+
+                    // left Y axis tooltip
                     var leftTooltip = am5.Tooltip.new(root, {
                         getFillFromSprite: false,
                         autoTextColor: false,
@@ -499,6 +551,8 @@ ntdrt.application = {
                     leftTooltip.label.setAll({
                         fill: '#fff'
                     });
+
+                    // left Y axis series
                     var leftSeries = self.chartLeft = chart.series.push(
                         am5xy.LineSeries.new(root, {
                             xAxis: xAxis,
@@ -514,13 +568,15 @@ ntdrt.application = {
                     });
                     leftSeries.data.setAll(data);
 
+                    // right Y axis
                     var yRightAxis = chart.yAxes.push(
                         am5xy.ValueAxis.new(root, {
                             renderer: am5xy.AxisRendererY.new(root, {
                                 opposite: true
                             }),
                             numberFormat: '####.## \' ' + right_unit + '\'',
-                            min: 0
+                            min: 0,
+                            tooltip: am5.Tooltip.new(root, {})
                         })
                     );
                     yRightAxis.get('renderer').labels.template.setAll({
@@ -542,6 +598,8 @@ ntdrt.application = {
                             fontWeight: 700
                         })
                     );
+
+                    // right Y axis tooltip
                     var rightTooltip = am5.Tooltip.new(root, {
                         getFillFromSprite: false,
                         autoTextColor: false,
@@ -553,6 +611,8 @@ ntdrt.application = {
                     rightTooltip.label.setAll({
                         fill: '#fff'
                     });
+
+                    // right Y axis series
                     var rightSeries = self.chartRight = chart.series.push(
                         am5xy.LineSeries.new(root, {
                             xAxis: xAxis,
@@ -568,6 +628,7 @@ ntdrt.application = {
                     });
                     rightSeries.data.setAll(data);
 
+                    // rest
                     var cursor = am5xy.XYCursor.new(root, {
                         behavior: 'zoomX'
                     });
@@ -589,6 +650,7 @@ ntdrt.application = {
                         timeout = setTimeout(function () {
                             root.events.off('frameended', onFrameEnded);
                             graph.parent().find('.loading').hide();
+                            clearInterval(loadingTimer);
                         }, 100)
                     };
                     root.events.on('frameended', onFrameEnded);

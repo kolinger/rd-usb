@@ -87,7 +87,7 @@
         </form>
 
         <div class="graph">
-            <div class="loading">Loading... Please wait...</div>
+            <div class="loading">Loading... Please wait<span data-dots>...</span></div>
             <div data-url="{{ url_for("index.graph_data") }}" id="graph" data-colors="{{ colors }}"></div>
         </div>
     </div>
