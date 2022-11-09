@@ -29,8 +29,7 @@ Section "Dummy Section" SecDummy
 SectionEnd
 
 Section "Uninstall"
-    Delete "$SMPROGRAMS\rd-usb\Uninstall.lnk"
-    Delete "$SMPROGRAMS\rd-usb\RD-USB.lnk"
+    RMDir /r "$SMPROGRAMS\rd-usb"
     RMDir /r $INSTDIR
 SectionEnd
 
