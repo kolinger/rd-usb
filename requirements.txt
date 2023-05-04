@@ -1,4 +1,4 @@
-Flask~=2.0.1
+Flask~=2.2.5
 pendulum~=2.1.2
 pyserial~=3.5
 python-socketio~=5.5.2
@@ -9,6 +9,6 @@ bleak~=0.12.1
 pycryptodome~=3.9.0
 
 pywebview~=3.5
-cefpython3==66.0
+cefpython3==66.1
 
 # don't forget pip install -U pyinstaller on upgrade

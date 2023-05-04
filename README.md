@@ -39,7 +39,7 @@ and `Run anyway`. I don't have certificate for signing and application does not 
 reputation so Microsoft will block by default.
 
 ### Source code
-1. Python 3.4 or newer is required
+1. Python 3.7 or newer is required
 2. Download `rd-usb-source-x.zip` from [releases](https://github.com/kolinger/rd-usb/releases)
    or `git clone https://github.com/kolinger/rd-usb.git`
 3. Install requirements 
@@ -257,7 +257,7 @@ Development
 
 ### Building binaries
 
-1. Install pyinstaller: `pip install pyinstaller` and [NSIS](https://nsis.sourceforge.io/Download) installer
+1. Install pyinstaller: `pip install pyinstaller` (4.x) and [NSIS](https://nsis.sourceforge.io/Download) installer
 2. Generate binaries: 
     - `pyinstaller pyinstaller-cli.spec`
     - `pyinstaller pyinstaller.spec`

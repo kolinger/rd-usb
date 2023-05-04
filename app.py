@@ -59,12 +59,12 @@ class Webview:
             parameters["height"] = self.height
 
         self.window = webview.create_window(html=self.loading_html, **parameters)
-        self.window.loaded += self.on_loaded
-        self.window.closing += self.on_close
+        self.window.events.loaded += self.on_loaded
+        self.window.events.closing += self.on_close
         webview.start(debug=debug, gui="cef")
 
     def on_loaded(self):
-        self.window.loaded -= self.on_loaded
+        self.window.events.loaded -= self.on_loaded
         self.loaded = True
 
     def on_close(self):
