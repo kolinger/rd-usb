@@ -16,11 +16,11 @@ Requirements
     installed. In my case two. One of them works.
     - On Linux `rfcomm` and `hcitool` can be used (both provided by bluez package)
         - Retrieve bluetooth address with `hcitool scan`
-        - Bind retrieved address to serial port with `rfcomm bind 0 aa:bb:cc:dd:ee:ff`. 
-        This step is not persistent. Serial port will disappear after reboot. Also rd-usb needs to 
+        - Bind retrieved address to serial port with `rfcomm bind 0 aa:bb:cc:dd:ee:ff`.
+        This step is not persistent. Serial port will disappear after reboot. Also rd-usb needs to
         have permissions to use /dev/rfcommX.
 - TC66C - meter is using BLE instead of regular bluetooth so pairing will not work nor RFCOMM will.
-    - BLE has very limited support on desktop devices, see used library for supported platforms and versions: 
+    - BLE has very limited support on desktop devices, see used library for supported platforms and versions:
     https://github.com/hbldh/bleak#features
 - TC66C USB - meter connected with USB
     - Meter connected with USB exposes itself as serial port
@@ -30,7 +30,7 @@ Installation
 
 ### Binaries (Win x64 only)
 - Download from [releases](https://github.com/kolinger/rd-usb/releases)
-    - **rd-usb-x.exe** is CLI web server application. GUI is provided by web browser. 
+    - **rd-usb-x.exe** is CLI web server application. GUI is provided by web browser.
     Run executable and web server will be shortly spawned on address http://127.0.0.1:5000.
     - **rd-usb-install-x.exe** is installer of standalone GUI application. Works without web browser.
     Embedded browser is used instead. External web browser still can be used with address (see above).
@@ -42,9 +42,9 @@ reputation so Microsoft will block by default.
 1. Python 3.7 or newer is required
 2. Download `rd-usb-source-x.zip` from [releases](https://github.com/kolinger/rd-usb/releases)
    or `git clone https://github.com/kolinger/rd-usb.git`
-3. Install requirements 
+3. Install requirements
    - For GUI: `pip install -r requirements.txt`
-   - For headless `pip install -r requirements_headless.txt` this version doesn't 
+   - For headless `pip install -r requirements_headless.txt` this version doesn't
      contain dependencies for embedded browser GUI. This is useful if you plan to use CLI/webserver only.
      Also useful on ARM SBCs.
 4. Run with `python web.py` - this will spawn web server on http://127.0.0.1:5000, port can be changed
@@ -97,7 +97,7 @@ Custom data directory
 Custom data directory can be specified with `--data-dir` option.
 
 For example `rd-usb.exe --data-dir C:/rd-usb` will place all configuration and data files in `C:/rd-usb` directory.
-This can be used together with shortcut, just make sure you escape path with quotes properly, for example: 
+This can be used together with shortcut, just make sure you escape path with quotes properly, for example:
 `"C:\your\path\rd-usb.exe" --data-dir "C:\your\path\data"`.
 
 Custom export
@@ -106,12 +106,12 @@ Custom export
 Application has basic CSV export built-in. For more advanced use-cases external script can be used.
 
 External program/script can be specified with `--on-receive` option.
-This script will be executed when new data is received. 
+This script will be executed when new data is received.
 New measurements are provided as JSON file. Path of this file is provided as first argument.
 
 For managing overhead another option `--on-receive-interval` is available (default value is 60).
 This number specified how often is external script called (in seconds, default value is every minute).
-Value 0 means script will be called for every new measurement as they happen. 
+Value 0 means script will be called for every new measurement as they happen.
 Script is not called when no new measurements are available.
 
 CLI example: `python web.py --on-receive on-receive.sh`
@@ -147,6 +147,9 @@ Reverse proxy
 
 If you like to have HTTPS (or use reverse proxy for other reasons) then simple reverse proxy can be used.
 All common webservers can do this. Here are examples for nginx.
+
+You can also modify on what address/interface is rd-usb listening by providing `--listen` CLI option
+like `--listen 192.168.1.100` where `192.168.1.100` is address of interface you want to listen on.
 
 At root:
 ````
@@ -187,8 +190,8 @@ server {
 When some prefix/path is used then it needs to be specified as argument `--prefix` when launching rd-usb.
 In this example `--prefix /rd-usb` is required resulting in something like `python3 web.py --prefix /rd-usb`.
 
-Note: `rd-usb` should not be exposed on untrusted network or to untrusted users. 
-Use [HTTP basic auth](https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/) 
+Note: `rd-usb` should not be exposed on untrusted network or to untrusted users.
+Use [HTTP basic auth](https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/)
 for example as authentication mechanism when running rd-usb at untrusted network.
 
 Systemd service
@@ -249,7 +252,7 @@ systemctl start rd-usb.service
 ```
 
 Don't forget to add user of rd-usb.service to `dialout` group to enable access to /dev/rfcomm0 for communication.
-In this example you need to add `www-data` to `dialout` like this `usermod -aG dialout www-data`. 
+In this example you need to add `www-data` to `dialout` like this `usermod -aG dialout www-data`.
 Webserver as reverse proxy in front of rd-usb.service is suggested (like nginx, apache2, ...).
 
 Development
@@ -258,7 +261,7 @@ Development
 ### Building binaries
 
 1. Install pyinstaller: `pip install pyinstaller` (4.x) and [NSIS](https://nsis.sourceforge.io/Download) installer
-2. Generate binaries: 
+2. Generate binaries:
     - `pyinstaller pyinstaller-cli.spec`
     - `pyinstaller pyinstaller.spec`
     - `makensis.exe installer.nsi`
