@@ -32,6 +32,7 @@ def url_ok(url):
 def parse_cli(open_browser=True, webview=False):
     parser = argparse.ArgumentParser()
     parser.add_argument("port", nargs="?", type=int, default=5000, help="Port for web server to listen on")
+    parser.add_argument("--listen", type=str, default="0.0.0.0", help="Listen on interface (defaults to 0.0.0.0)")
     parser.add_argument("--on-receive", help="Call this program/script when new measurements are received")
     parser.add_argument("--on-receive-interval", type=int, default=60, help="Interval for --on-receive (in seconds)")
     parser.add_argument("--data-dir", type=str, help="Where to store configuration and user data files")
@@ -52,6 +53,7 @@ def run(args=None, embedded=False):
         initialize_paths_from_args(args)
 
     port = args.port
+    listen = "listen" in args and args.listen
     daemon = "daemon" in args and args.daemon
 
     if "prefix" in args:
@@ -123,7 +125,7 @@ def run(args=None, embedded=False):
 
             Thread(target=open_in_browser, daemon=True).start()
 
-        app.run(host="0.0.0.0", port=port, threaded=True, use_reloader=False)
+        app.run(host=listen, port=port, threaded=True, use_reloader=False)
 
     except (KeyboardInterrupt, SystemExit):
         raise
