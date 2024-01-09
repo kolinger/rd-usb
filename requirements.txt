@@ -6,9 +6,10 @@ python-engineio~=4.3.1
 appdirs~=1.4.4
 
 bleak~=0.12.1
-pycryptodome~=3.9.0
+pycryptodome~=3.9.1
 
 pywebview~=3.5
 cefpython3==66.1
 
 # don't forget pip install -U pyinstaller on upgrade
+# and also update requirements_headless.txt if applicable
