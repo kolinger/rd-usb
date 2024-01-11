@@ -8,6 +8,7 @@ appdirs~=1.4.4
 bleak~=0.12.1
 pycryptodome~=3.9.1
 PyBluez~=0.22.0
+# PyBluez on Windows is complicated, use pip install ./bin/PyBluez-0.22-cp37-cp37m-win_amd64.whl instead as workaround
 
 pywebview~=3.5
 cefpython3==66.1
