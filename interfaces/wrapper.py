@@ -4,7 +4,7 @@ from queue import Empty
 from time import time
 import traceback
 
-from interfaces.interface import Interface
+from interfaces.interface import Interface, FatalErrorException
 from interfaces.tc import TcBleInterface, TcSerialInterface
 from interfaces.um import UmInterface, UmRfcommInterface
 from utils.config import Config, get_args, initialize_paths_from_args
@@ -61,6 +61,8 @@ class Wrapper(Interface):
         if result is None:
             raise TimeoutError
 
+        if "FatalErrorException" in result:
+            raise FatalErrorException(result)
         if "Traceback" in result:
             raise ErrorException(result)
 

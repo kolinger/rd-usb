@@ -85,6 +85,12 @@ Usage
 1. Make sure your OS is supported and has bluetooth with BLE support (Bluetooth Low Energy)
 2. Rest is same as other devices. See above.
 
+**Bluetooth issues**
+
+If you have Bluetooth issues then try to close rd-usb, unplug/plug USB meter and start rd-usb again. Bluetooth can be
+sometimes funny and just refuse to work without any reason. If this doesn't help check proximity of your PC and USB
+meter, sometimes moving USB meter real close can resolve Bluetooth issues.
+
 **TC66C USB or legacy UM34C/UM24C/UM25C RFCOMM serial/COM port method**
 
 1. Select UM34C/UM24C/UM25C with Serial suffix.

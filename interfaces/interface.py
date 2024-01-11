@@ -7,3 +7,7 @@ class Interface:
 
     def read(self):
         raise NotImplementedError()
+
+
+class FatalErrorException(Exception):
+    pass

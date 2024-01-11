@@ -15,6 +15,7 @@ import pendulum
 from serial.tools.list_ports import comports
 from socketio import Namespace
 
+from interfaces.interface import FatalErrorException
 from interfaces.tc import TcBleInterface
 from interfaces.wrapper import Wrapper
 from utils.config import Config
@@ -355,6 +356,8 @@ class Daemon:
 
                 return callback()
             except (KeyboardInterrupt, SystemExit):
+                raise
+            except FatalErrorException:
                 raise
             except:
                 count -= 1

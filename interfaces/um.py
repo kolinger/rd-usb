@@ -5,7 +5,7 @@ from time import time
 import bluetooth
 import serial
 
-from interfaces.interface import Interface
+from interfaces.interface import Interface, FatalErrorException
 
 
 class UmInterface(Interface):
@@ -103,6 +103,9 @@ class UmRfcommInterface(UmInterface):
                 if item["protocol"] == "RFCOMM":
                     service = item
                     break
+
+            if service is None:
+                raise FatalErrorException("Bluetooth service not found, try to initiate Setup again")
 
             self.socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
             self.socket.connect((service["host"], service["port"]))
