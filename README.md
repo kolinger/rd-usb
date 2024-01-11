@@ -11,44 +11,48 @@ Based on https://github.com/sebastianha/um34c
 
 Requirements
 --
-- UM34C/UM24C/UM25C - meter needs to be connected as serial port
+
+- UM34C/UM24C/UM25C - meter connected via regular Bluetooth
+- TC66C - meter is using BLE instead of regular bluetooth so pairing will not work nor RFCOMM will
+    - BLE has limited support on desktop devices, see used library for supported platforms and versions:
+      https://github.com/hbldh/bleak#features
+- TC66C USB - meter connected with USB
+    - Meter connected with USB exposes itself as serial port
+- UM34C/UM24C/UM25C (legacy serial/COM port method) - meter can be connected as serial port
     - Pairing with Windows Settings works fine. Pin is 1234. After successful pairing some serial ports are
-    installed. In my case two. One of them works.
+      installed. In my case two. One of them works.
     - On Linux `rfcomm` and `hcitool` can be used (both provided by bluez package)
         - Retrieve bluetooth address with `hcitool scan`
         - Bind retrieved address to serial port with `rfcomm bind 0 aa:bb:cc:dd:ee:ff`.
-        This step is not persistent. Serial port will disappear after reboot. Also rd-usb needs to
-        have permissions to use /dev/rfcommX.
-- TC66C - meter is using BLE instead of regular bluetooth so pairing will not work nor RFCOMM will.
-    - BLE has very limited support on desktop devices, see used library for supported platforms and versions:
-    https://github.com/hbldh/bleak#features
-- TC66C USB - meter connected with USB
-    - Meter connected with USB exposes itself as serial port
+          This step is not persistent. Serial port will disappear after reboot. Also rd-usb needs to
+          have permissions to use /dev/rfcommX.
 
 Installation
 --
 
 ### Binaries (Win x64 only)
+
 - Download from [releases](https://github.com/kolinger/rd-usb/releases)
     - **rd-usb-x.exe** is CLI web server application. GUI is provided by web browser.
-    Run executable and web server will be shortly spawned on address http://127.0.0.1:5000.
+      Run executable and web server will be shortly spawned on address http://127.0.0.1:5000.
     - **rd-usb-install-x.exe** is installer of standalone GUI application. Works without web browser.
-    Embedded browser is used instead. External web browser still can be used with address (see above).
+      Embedded browser is used instead. External web browser still can be used with address (see above).
 - Application will be probably blocked by Microsoft SmartScreen. For unblock click `More info`
-and `Run anyway`. I don't have certificate for signing and application does not have any
-reputation so Microsoft will block by default.
+  and `Run anyway`. I don't have certificate for signing and application does not have any
+  reputation so Microsoft will block by default.
 
 ### Source code
+
 1. Python 3.7 or newer is required
 2. Download `rd-usb-source-x.zip` from [releases](https://github.com/kolinger/rd-usb/releases)
    or `git clone https://github.com/kolinger/rd-usb.git`
 3. Install requirements
-   - For GUI: `pip install -r requirements.txt`
-   - For headless `pip install -r requirements_headless.txt` this version doesn't
-     contain dependencies for embedded browser GUI. This is useful if you plan to use CLI/webserver only.
-     Also useful on ARM SBCs.
+    - For GUI: `pip install -r requirements.txt`
+    - For headless `pip install -r requirements_headless.txt` this version doesn't
+      contain dependencies for embedded browser GUI. This is useful if you plan to use CLI/webserver only.
+      Also useful on ARM SBCs.
 4. Run with `python web.py` - this will spawn web server on http://127.0.0.1:5000, port can be changed
-with first argument: `python web.py 5555`
+   with first argument: `python web.py 5555`
 
 For additional arguments/options use --help: `python web.py --help`.
 
@@ -61,23 +65,31 @@ On Linux use `python3` and `pip3`.
 Usage
 --
 
-**UM34C/UM24C/UM25C Bluetooth or TC66C USB**
+**UM34C/UM24C/UM25C Bluetooth**
+
 1. Select your device version.
 2. Name your session. For example 'testing some power bank'. This is
    used to separate multiple measurements from each other.
 3. Select sample rate. Faster sample rate will result in more accurate data but also
    will create a lot more data. For short measurements use faster sample rate. For longer
    use slower rate. Choose carefully.
-4. Follow Setup link to find your serial port or click Connect if you already have port selected.
-5. Connection will be hopefully successful and you will see live measurements in graph.
-   Otherwise read log for error messages.
+4. Select UM34C/UM24C/UM25C from devices and follow with Setup link.
+    1. If previously connected you can initiate Setup again by clicking on current Bluetooth address
+5. Scan for devices and select your device from list by clicking on it
+6. After this you can connect simply by using Connect button. Setup is required only for new/different device.
+7. Connection will be hopefully successful, and you will see live measurements in graph.
+   Otherwise, read log for error messages.
 
 **TC66C Bluetooth**
+
 1. Make sure your OS is supported and has bluetooth with BLE support (Bluetooth Low Energy)
-2. Select TC66C from devices and follow with Setup link.
-3. Scan for devices and select your device from list by clicking on it
-4. After this you can connect simply by using Connect button. Setup is required only for new/different device.
-5. Rest is same as other devices. See above.
+2. Rest is same as other devices. See above.
+
+**TC66C USB or legacy UM34C/UM24C/UM25C RFCOMM serial/COM port method**
+
+1. Select UM34C/UM24C/UM25C with Serial suffix.
+2. Follow Setup link to find your serial port or click Connect if you already have port selected.
+3. Rest is same as other devices. See above.
 
 ![setup](screenshots/setup.png)
 
@@ -152,6 +164,7 @@ You can also modify on what address/interface is rd-usb listening by providing `
 like `--listen 192.168.1.100` where `192.168.1.100` is address of interface you want to listen on.
 
 At root:
+
 ````
 server {
 	listen 443 ssl;
@@ -169,6 +182,7 @@ server {
 ````
 
 In path:
+
 ````
 server {
 	listen 443 ssl;
