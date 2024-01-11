@@ -110,6 +110,62 @@ Tables
 
 ![tables](screenshots/tables.png)
 
+Docker
+--
+
+Experimental Docker container exists. Bluetooth isn't officially supported in Docker so there is need to pass special
+arguments to Docker to make it work - there are also caveats that different system may need extra system changes to
+make Bluetooth in Docker work.
+
+**Ubuntu/Debian/Raspbian caveats** - you need to load custom Docker AppArmor policy and add extra argument for Docker 
+to use this policy instead of the default one. 
+
+In terminal:
+```
+sudo wget https://raw.githubusercontent.com/kolinger/rd-usb/master/docker/docker-ble -O /etc/apparmor.d/docker-ble
+sudo apparmor_parser -r -W /etc/apparmor.d/docker-ble
+```
+
+This may be sometimes unnecessary, but it won't hurt.
+Thanks @thijsputman for his work on [docker-ble](https://github.com/thijsputman/tc66c-mqtt/blob/main/docker/docker-ble).
+
+**Other Linuxes caveats** - unknown - if you know, let me know. The principe is the same but details may differ. 
+If you use AppArmor then you may need custom policy otherwise Bluetooth won't work.
+
+**Don't forget** to mount `/opt/rd-usb/data` via volume otherwise you will lose all your data when container gets 
+recreated/updated.
+
+**docker-compose.yml**
+
+```
+version: '3.7'
+services:
+  rd-usb:
+    container_name: rd-usb
+    image: kolinger/rd-usb:latest
+    restart: unless-stopped
+    security_opt:
+      - apparmor=docker-ble
+    environment:
+      - ARGS=
+    volumes:
+      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
+      - /some/place/to/store/data:/opt/rd-usb/data
+    # you need something like these examples if you want to use serial port based communication
+    #devices:
+    #  - /dev/ttyUSB0
+    #  - /dev/rfcomm0
+    network_mode: host
+```
+
+Change `/some/place/to/store/data` to your liking.
+
+If you want to use TC66C USB or UMxxC Serial then you also need to pass specific serial device to docker. For TC66C USB
+it would be something like /dev/ttyUSB0 and for UMxxC Serial something like /dev/rfcomm0.
+
+Optional arguments for `web.py` can be passed to `ARGS` environment variables - for example `ARGS=1888` will 
+change listening port to 1888, `ARGS="1888 --prefix /rd-usb"` will set path prefix for proxy purposes.
+
 Custom data directory
 --
 Custom data directory can be specified with `--data-dir` option.

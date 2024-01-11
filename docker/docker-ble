@@ -1,0 +1,42 @@
+#include <tunables/global>
+
+profile docker-ble flags=(attach_disconnected,mediate_deleted) {
+
+  #include <abstractions/base>
+  #include <abstractions/dbus-strict>
+
+  dbus (send, receive) bus=system peer=(name=org.bluez, label=unconfined),
+  dbus (send, receive) bus=system interface=org.bluez.GattCharacteristic1 peer=(label=unconfined),
+  dbus (send, receive) bus=system interface=org.bluez.GattDescriptor1 peer=(label=unconfined),
+  dbus (send, receive) bus=system interface=org.freedesktop.DBus.ObjectManager peer=(label=unconfined),
+  dbus (send, receive) bus=system interface=org.freedesktop.DBus.Properties peer=(label=unconfined),
+
+  network,
+  capability,
+  file,
+  umount,
+
+  # Host (privileged) processes may send signals to container processes.
+  signal (receive) peer=unconfined,
+  # Container processes may send signals amongst themselves.
+  signal (send,receive) peer=docker-ble,
+
+  deny @{PROC}/* w,   # deny write for all files directly in /proc (not in a subdir)
+  # deny write to files not in /proc/<number>/** or /proc/sys/**
+  deny @{PROC}/{[^1-9],[^1-9][^0-9],[^1-9s][^0-9y][^0-9s],[^1-9][^0-9][^0-9][^0-9]*}/** w,
+  deny @{PROC}/sys/[^k]** w,  # deny /proc/sys except /proc/sys/k* (effectively /proc/sys/kernel)
+  deny @{PROC}/sys/kernel/{?,??,[^s][^h][^m]**} w,  # deny everything except shm* in /proc/sys/kernel/
+  deny @{PROC}/sysrq-trigger rwklx,
+  deny @{PROC}/kcore rwklx,
+  deny mount,
+  deny /sys/[^f]*/** wklx,
+  deny /sys/f[^s]*/** wklx,
+  deny /sys/fs/[^c]*/** wklx,
+  deny /sys/fs/c[^g]*/** wklx,
+  deny /sys/fs/cg[^r]*/** wklx,
+  deny /sys/firmware/** rwklx,
+  deny /sys/kernel/security/** rwklx,
+
+  # suppress ptrace denials when using 'docker ps' or using 'ps' inside a container
+  ptrace (trace,read,tracedby,readby) peer=docker-ble,
+}
