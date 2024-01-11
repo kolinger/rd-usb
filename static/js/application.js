@@ -59,12 +59,16 @@ ntdrt.application = {
         $(document).on('change', '.setup select[name="version"]', function (e) {
             var control = $(this);
             var version = control.val();
-            if (version.indexOf('TC') === 0 && version.indexOf('USB') === -1) {
-                $('.setup [data-serial]').hide();
-                $('.setup [data-ble]').show();
+
+            var serial = $('.setup [data-serial]').hide();
+            var rfcomm = $('.setup [data-rfcomm]').hide();
+            var ble = $('.setup [data-ble]').hide();
+            if (version.indexOf('UM') === 0 && version.indexOf('Serial') === -1) {
+                rfcomm.show();
+            } else if (version.indexOf('TC') === 0 && version.indexOf('USB') === -1) {
+                ble.show();
             } else {
-                $('.setup [data-serial]').show();
-                $('.setup [data-ble]').hide();
+                serial.show();
             }
         });
 
@@ -176,6 +180,15 @@ ntdrt.application = {
             serial();
         }
 
+        var rfcomm = function () {
+            socket.emit('scan_rfcomm');
+            $('.scan-result').text('Scanning... This can take a while...');
+        };
+        $(document).on('click', '.rfcomm .scan button', rfcomm);
+        if ($('.rfcomm .scan').length) {
+            rfcomm();
+        }
+
         var ble = function () {
             socket.emit('scan_ble');
             $('.scan-result').text('Scanning... This can take a while...');
@@ -193,6 +206,12 @@ ntdrt.application = {
             e.preventDefault();
             $('.scan-result').empty();
             self.connect({port: $(this).attr('data-address')});
+        });
+
+        $(document).on('click', '.rfcomm .scan-result [data-address]', function (e) {
+            e.preventDefault();
+            $('.scan-result').empty();
+            self.connect({rfcomm_address: $(this).attr('data-address')});
         });
 
         $(document).on('click', '.ble .scan-result [data-address]', function (e) {
@@ -224,14 +243,21 @@ ntdrt.application = {
             }
 
             var form = $('#connect');
+            form.find('[data-serial]').hide();
+            form.find('[data-rfcomm]').hide();
+            form.find('[data-ble]').hide();
+
             if (override.hasOwnProperty('port')) {
-                form.find('[data-ble]').hide();
                 var serial = form.find('[data-serial]');
                 serial.show();
                 serial.find('.setup-link').text(data['port']);
 
+            } else if (override.hasOwnProperty('rfcomm_address')) {
+                var rfcomm = form.find('[data-rfcomm]');
+                rfcomm.show();
+                rfcomm.find('.setup-link').text(data['rfcomm_address']);
+
             } else if (override.hasOwnProperty('ble_address')) {
-                form.find('[data-serial]').hide();
                 var ble = form.find('[data-ble]');
                 ble.show();
                 ble.find('.setup-link').text(data['ble_address']);

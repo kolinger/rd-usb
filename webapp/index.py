@@ -32,6 +32,7 @@ class Index:
         blueprint.add_url_rule("/graph", "graph", self.render_graph)
         blueprint.add_url_rule("/graph.json", "graph_data", self.render_graph_data)
         blueprint.add_url_rule("/setup", "setup", self.render_setup, methods=["GET", "POST"])
+        blueprint.add_url_rule("/rfcomm", "rfcomm", self.render_rfcomm)
         blueprint.add_url_rule("/ble", "ble", self.render_ble)
         blueprint.add_url_rule("/serial", "serial", self.render_serial)
         blueprint.add_url_rule("/tc66c-import", "tc66c_import", self.render_tc66c_import, methods=["GET", "POST"])
@@ -51,6 +52,7 @@ class Index:
             "port": self.config.read("port", ""),
             "rate": str(self.config.read("rate", 1.0)),
             "name": self.config.read("name", pendulum.now().format("YYYY-MM-DD")),
+            "rfcomm_address": self.config.read("rfcomm_address"),
             "ble_address": self.config.read("ble_address"),
             "format_datetime": self.format_date,
             "app_prefix": current_app.config["app_prefix"]
@@ -284,6 +286,13 @@ class Index:
             page="setup",
             default_timeout=Daemon.DEFAULT_TIMEOUT,
             default_retry_count=Daemon.DEFAULT_RETRY_COUNT,
+        )
+
+    def render_rfcomm(self):
+        self.init()
+        self.fill_config_from_parameters()
+        return render_template(
+            "rfcomm.html"
         )
 
     def render_ble(self):

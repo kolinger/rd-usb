@@ -62,10 +62,14 @@
                         <option value="UM24C"{% if version == "UM24C" %} selected{% endif %}>UM24C</option>
                         <option value="TC66C"{% if version == "TC66C" %} selected{% endif %}>TC66C</option>
                         <option value="TC66C-USB"{% if version == "TC66C-USB" %} selected{% endif %}>TC66C USB</option>
+                        <option value="UM34C-Serial"{% if version == "UM34C-Serial" %} selected{% endif %}>UM34C Serial</option>
+                        <option value="UM25C-Serial"{% if version == "UM25C-Serial" %} selected{% endif %}>UM25C Serial</option>
+                        <option value="UM24C-Serial"{% if version == "UM24C-Serial" %} selected{% endif %}>UM24C Serial</option>
                     </select>
                 </div>
+                {% set rfcomm = version and version.startswith("UM") and not version.endswith("Serial") %}
                 {% set tc_ble = version and version.startswith("TC") and not version.endswith("USB") %}
-                <div class="form-group" data-serial{% if tc_ble %} style="display:none"{% endif %}>
+                <div class="form-group" data-serial{% if tc_ble or rfcomm %} style="display:none"{% endif %}>
                     <a href="{{ url_for("index.serial") }}" class="setup-link">
                         {% if port %}
                             {{ port }}
@@ -74,6 +78,15 @@
                         {% endif %}
                     </a>
                     <input type="hidden" name="port" value="{{ port }}" {% if connect_disabled %}disabled {% endif %}/>
+                </div>
+                <div class="form-group" data-rfcomm{% if not rfcomm %} style="display:none"{% endif %}>
+                    <a href="{{ url_for("index.rfcomm") }}" class="setup-link">
+                        {% if rfcomm_address %}
+                            {{ rfcomm_address }}
+                        {% else %}
+                            Setup
+                        {% endif %}
+                    </a>
                 </div>
                 <div class="form-group" data-ble{% if not tc_ble %} style="display:none"{% endif %}>
                     <a href="{{ url_for("index.ble") }}" class="setup-link">

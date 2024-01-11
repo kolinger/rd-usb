@@ -6,7 +6,7 @@ import traceback
 
 from interfaces.interface import Interface
 from interfaces.tc import TcBleInterface, TcSerialInterface
-from interfaces.um import UmInterface
+from interfaces.um import UmInterface, UmRfcommInterface
 from utils.config import Config, get_args, initialize_paths_from_args
 
 
@@ -84,8 +84,12 @@ class Receiver:
             else:
                 interface = TcBleInterface(config.read("ble_address"))
         else:
-            interface = UmInterface(config.read("port"), serialTimeout)
-            if version == "UM25C":
+            if version.endswith("Serial"):
+                interface = UmInterface(config.read("port"), serialTimeout)
+            else:
+                interface = UmRfcommInterface(config.read("rfcomm_address"))
+
+            if version.startswith("UM25C"):
                 interface.enable_higher_resolution()
 
         while True:

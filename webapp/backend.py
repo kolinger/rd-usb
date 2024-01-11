@@ -10,6 +10,7 @@ from time import time, sleep
 from timeit import default_timer as timer
 import traceback
 
+import bluetooth
 import pendulum
 from serial.tools.list_ports import comports
 from socketio import Namespace
@@ -51,6 +52,11 @@ class Backend(Namespace):
         if "port" in data:
             self.config.write("port", data["port"])
 
+        if "rfcomm_address" in data:
+            self.config.write("rfcomm_address", data["rfcomm_address"])
+        else:
+            data["rfcomm_address"] = self.config.read("rfcomm_address")
+
         if "ble_address" in data:
             self.config.write("ble_address", data["ble_address"])
         else:
@@ -75,13 +81,39 @@ class Backend(Namespace):
         except ValueError:
             pass
 
-        tc_ble = data["version"].startswith("TC") and "USB" not in data["version"]
+        rfcomm = data["version"].startswith("UM") and not data["version"].endswith("Serial")
+        if rfcomm and ("rfcomm_address" not in data or not data["rfcomm_address"]):
+            self.daemon.log("Bluetooth address is missing. Select address in Setup")
+            return
+
+        tc_ble = data["version"].startswith("TC") and not data["version"].endswith("USB")
         if tc_ble and ("ble_address" not in data or not data["ble_address"]):
             self.daemon.log("BLE address is missing. Select address in Setup")
             return
 
         self.emit("connecting")
         self.daemon.start()
+
+    def on_scan_rfcomm(self, sid):
+        self.init()
+        try:
+            result = ["Results:"]
+
+            devices = bluetooth.discover_devices(lookup_names=True)
+            if len(devices) == 0:
+                result.append("no device found, try again")
+
+            for address, name in devices:
+                name = "%s (%s)" % (address, name)
+                result.append("<a href=\"#\" data-address=\"%s\">%s</a>" % (address, name))
+
+            self.emit("scan-result", "\n".join(result))
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            logging.exception(sys.exc_info()[0])
+            self.emit("scan-result", traceback.format_exc())
 
     def on_scan_ble(self, sid):
         self.init()
@@ -93,8 +125,8 @@ class Backend(Namespace):
                 result.append("no device found, try again")
 
             for device in data:
-                name = device["address"] + " (" + device["name"] + ")"
-                result.append("<a href=\"#\" data-address=\"" + device["address"] + "\">" + name + "</a>")
+                name = "%s (%s)" % (device["address"], device["name"])
+                result.append("<a href=\"#\" data-address=\"%s\">%s</a>" % (device["address"], name))
 
             self.emit("scan-result", "\n".join(result))
 

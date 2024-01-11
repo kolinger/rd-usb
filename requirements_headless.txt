@@ -7,3 +7,4 @@ appdirs~=1.4.4
 
 bleak~=0.12.1
 pycryptodome~=3.9.1
+PyBluez~=0.23.0

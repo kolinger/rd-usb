@@ -2,6 +2,7 @@ import codecs
 from collections import OrderedDict
 from time import time
 
+import bluetooth
 import serial
 
 from interfaces.interface import Interface
@@ -85,3 +86,42 @@ class UmInterface(Interface):
     def disconnect(self):
         if self.serial:
             self.serial.close()
+
+
+class UmRfcommInterface(UmInterface):
+    socket = None
+
+    def __init__(self, address):
+        super().__init__(None, None)
+        self.address = address
+
+    def connect(self):
+        if self.socket is None:
+            services = bluetooth.find_service(address=self.address)
+            service = None
+            for item in services:
+                if item["protocol"] == "RFCOMM":
+                    service = item
+                    break
+
+            self.socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+            self.socket.connect((service["host"], service["port"]))
+
+    def read(self):
+        self.connect()
+        self.send("f0")
+        buffer = bytearray()
+        deadline = time() + 30
+        while len(buffer) < 130 and time() < deadline:
+            data = self.socket.recv(130)
+            buffer.extend(data)
+        return self.parse(buffer)
+
+    def send(self, value):
+        self.connect()
+        self.socket.send(bytes.fromhex(value))
+
+    def disconnect(self):
+        if self.socket:
+            self.socket.close()
+            self.socket = None
