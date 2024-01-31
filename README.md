@@ -147,6 +147,7 @@ services:
     security_opt:
       - apparmor=docker-ble
     environment:
+      - TZ=Etc/UTC # change your timeozne (TZ identifier here), for example Europe/London
       - ARGS=
     volumes:
       - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
