@@ -1,11 +1,8 @@
 /build/
 /dist/
-/config.json
-/build-docker.cmd
-/docker-push.cmd
-/version.txt
-/data.db
-/*.log
-/on-receive.output
-/on-receive*.json
+/data/*
 *.pyc
+
+/version.txt
+
+!.gitignore

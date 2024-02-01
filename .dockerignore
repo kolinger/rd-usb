@@ -1,0 +1,12 @@
+/build/
+/dist/
+/data/*
+*.pyc
+
+/.git/
+/.idea/
+**/__pycache__/
+/bin/
+/screenshots/
+
+!.gitignore
