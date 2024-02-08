@@ -43,7 +43,7 @@ Installation
 
 ### Source code
 
-1. Python 3.7 or newer is required
+1. Python 3.11 or newer is required
 2. Download `rd-usb-source-x.zip` from [releases](https://github.com/kolinger/rd-usb/releases)
    or `git clone https://github.com/kolinger/rd-usb.git`
 3. Install requirements
@@ -57,8 +57,8 @@ Installation
 For additional arguments/options use --help: `python web.py --help`.
 
 On Windows `python` can be found in Python's installation folder.
-For example replace `python` with `C:\Python37\python.exe web.py`
-and `pip` with `C:\Python37\python.exe -m pip install -r requirements.txt`.
+For example replace `python` with `C:\Python\python.exe web.py`
+and `pip` with `C:\Python\python.exe -m pip install -r requirements.txt`.
 
 On Linux use `python3` and `pip3`.
 

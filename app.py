@@ -8,7 +8,6 @@ from time import sleep
 from urllib import request
 
 import webview
-from webview.platforms.cef import settings, command_line_switches
 
 from utils.config import Config, get_data_path, get_cache_path, initialize_paths_from_args
 from utils.version import version
@@ -61,7 +60,7 @@ class Webview:
         self.window = webview.create_window(html=self.loading_html, **parameters)
         self.window.events.loaded += self.on_loaded
         self.window.events.closing += self.on_close
-        webview.start(debug=debug, gui="cef")
+        webview.start(debug=debug)
 
     def on_loaded(self):
         self.window.events.loaded -= self.on_loaded
@@ -97,19 +96,23 @@ if __name__ == "__main__":
             exit(0)
 
         args = parse_cli(webview=True)
+        initialize_paths_from_args(args)
 
-        if args.disable_gpu:
-            command_line_switches["disable-gpu"] = ""
+        try:
+            from webview.platforms.cef import settings, command_line_switches
+
+            if args.disable_gpu:
+                command_line_switches["disable-gpu"] = ""
+
+            settings.update({
+                "log_file": os.path.join(get_data_path(), "cef.log"),
+                "cache_path": get_cache_path(),
+            })
+        except ImportError:
+            pass  # cef only
 
         def callback():
             run(args, embedded=True)
-
-        initialize_paths_from_args(args)
-
-        settings.update({
-            "log_file": os.path.join(get_data_path(), "cef.log"),
-            "cache_path": get_cache_path(),
-        })
 
         url = "http://%s:%s" % ("127.0.0.1", args.port)
         view = Webview(url)

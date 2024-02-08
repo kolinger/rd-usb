@@ -5,13 +5,12 @@ python-socketio~=5.5.2
 python-engineio~=4.3.1
 appdirs~=1.4.4
 
-bleak~=0.12.1
-pycryptodome~=3.9.1
-PyBluez~=0.22.0
-# PyBluez on Windows is complicated, use pip install ./bin/PyBluez-0.22-cp37-cp37m-win_amd64.whl instead as workaround
+bleak~=0.21.1
+pycryptodome~=3.20.0
+git+https://github.com/pybluez/pybluez.git#egg=pybluez
 
-pywebview~=3.5
-cefpython3==66.1
+pywebview~=3.7.0
+pythonnet~=3.0.3
 
 # don't forget pip install -U pyinstaller on upgrade
 # and also update requirements_headless.txt if applicable

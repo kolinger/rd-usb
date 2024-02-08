@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.5
-FROM python:3.7
+FROM python:3.11
 
 ADD . /opt/rd-usb
 

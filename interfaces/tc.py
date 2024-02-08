@@ -6,7 +6,7 @@ from time import time, sleep
 from Crypto.Cipher import AES
 
 try:
-    from bleak import BleakClient, BleakError
+    from bleak import BleakClient, BleakError, BleakScanner
     from bleak import discover
     supported = True
 except Exception as e:
@@ -38,7 +38,7 @@ class TcBleInterface(Interface):
 
     def scan(self):
         async def run():
-            devices = await discover()
+            devices = await BleakScanner().discover()
             formatted = []
             for device in devices:
                 formatted.append({
