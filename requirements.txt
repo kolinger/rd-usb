@@ -11,6 +11,7 @@ git+https://github.com/pybluez/pybluez.git#egg=pybluez
 
 pywebview~=3.7.0
 pythonnet~=3.0.3
+screeninfo~=0.8.1
 
 # don't forget pip install -U pyinstaller on upgrade
 # and also update requirements_headless.txt if applicable

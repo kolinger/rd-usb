@@ -7,6 +7,7 @@ from threading import Thread
 from time import sleep
 from urllib import request
 
+from screeninfo import screeninfo
 import webview
 
 from utils.config import Config, get_data_path, get_cache_path, initialize_paths_from_args
@@ -20,6 +21,8 @@ class Webview:
     title = None
     width = None
     height = None
+    x = None
+    y = None
 
     callback = None
     window = None
@@ -50,12 +53,13 @@ class Webview:
         Thread(target=self.handle_callback, daemon=True).start()
 
         parameters = self.window_parameters
-        if self.title:
-            parameters["title"] = self.title
-        if self.width:
-            parameters["width"] = self.width
-        if self.height:
-            parameters["height"] = self.height
+        parameters["title"] = self.title
+        parameters["width"] = self.width
+        parameters["height"] = self.height
+        parameters["x"] = self.x
+        parameters["y"] = self.y
+
+        self.clamp_coordinates(parameters)
 
         self.window = webview.create_window(html=self.loading_html, **parameters)
         self.window.events.loaded += self.on_loaded
@@ -70,6 +74,8 @@ class Webview:
         config = Config()
         config.write("window_width", self.window.width, False)
         config.write("window_height", self.window.height, False)
+        config.write("window_x", self.window.x, flush=False)
+        config.write("window_y", self.window.y, flush=False)
         config.flush()
 
     def handle_callback(self):
@@ -87,6 +93,47 @@ class Webview:
             return True
         except Exception:
             return False
+
+    def clamp_coordinates(self, parameters):
+        # not ideal, this doesn't consider monitors with different resolutions, but it's better than nothing
+        extreme = {
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+        }
+
+        for monitor in screeninfo.get_monitors():
+            if monitor.x < extreme["left"]:
+                extreme["left"] = monitor.x
+
+            right = monitor.x + monitor.width
+            if right > extreme["right"]:
+                extreme["right"] = right
+
+            if monitor.y < extreme["top"]:
+                extreme["top"] = monitor.y
+
+            bottom = monitor.y + monitor.height
+            if bottom > extreme["bottom"]:
+                extreme["bottom"] = bottom
+
+        if parameters["x"] is None or parameters["y"] is None:
+            out_of_bounds = True
+        else:
+            out_of_bounds = False
+            if parameters["x"] < extreme["left"]:
+                out_of_bounds = True
+            elif parameters["x"] + parameters["width"] > extreme["right"]:
+                out_of_bounds = True
+            elif parameters["y"] < extreme["top"]:
+                out_of_bounds = True
+            elif parameters["y"] + parameters["height"] > extreme["bottom"]:
+                out_of_bounds = True
+
+        if out_of_bounds:
+            parameters["x"] = None
+            parameters["y"] = None
 
 
 if __name__ == "__main__":
@@ -121,6 +168,8 @@ if __name__ == "__main__":
         config = Config()
         view.width = config.read("window_width", 1250)
         view.height = config.read("window_height", 800)
+        view.x = config.read("window_x", None)
+        view.y = config.read("window_y", None)
         view.start()
 
 
