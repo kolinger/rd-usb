@@ -192,6 +192,7 @@ Script is not called when no new measurements are available.
 CLI example: `python web.py --on-receive on-receive.sh`
 
 See `on-receive.sh` or `on-receive.cmd` files for more information how implement this program/script.
+Also `on-receive-python-example.cmd` and `on-receive-python-example.py` show more extended example how to call python.
 
 Example structure of JSON file:
 

@@ -332,8 +332,14 @@ class Daemon:
                 payload_file = os.path.join(os.getcwd(), "on-receive-payload-%s.json") % time()
                 with open(payload_file, "w") as file:
                     file.write(payload)
+
+                logging.info("executing --on-receive command '%s' with payload file '%s'" % (
+                    self.on_receive, payload_file
+                ))
                 command = self.on_receive + " \"" + payload_file + "\""
-                subprocess.Popen(command, shell=True, env={})
+                env = os.environ.copy()
+                env["PYTHONPATH"] = ""
+                subprocess.Popen(command, shell=True, env=env)
 
         self.emit("update", json.dumps({
             "table": table,
