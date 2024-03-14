@@ -110,6 +110,37 @@ Tables
 
 ![tables](screenshots/tables.png)
 
+Multiple instances
+------------------
+
+If you want to use multiple instances for multiple USB meters then you need to do some adjustments to separate these
+instance from each other. As default all instances share the same port thus you can't use multiple USB meters.
+
+This can be easily fixed by changing the port, the port is first argument, without any argument `5000` is used.
+We can use default `5000` for first instance and then increment port for each additional instance.
+
+Examples:
+- `"C:\Program Files\rd-usb\rd-usb.exe" 5001` for Windows GUI
+- `"C:\somewhere\rd-usb.exe" 5001` for Windows standalone binary
+- `"C:\Python\python.exe" web.py 5001` for Windows Python
+- `/some/python web.py 5001` for Linux
+
+This way you can use multiple instances with multiple USB meters but all data and settings are shared together.
+
+It may be beneficial to separate instances completely including all data and settings. For this extra parameter
+`--data-dir` is required, for details see **Custom data directory** section bellow. This parameter expects directory
+where all data and settings will be placed. If you combined `--data-dir` and port then you can have independent
+instances.
+
+Examples:
+- `"C:\Program Files\rd-usb\rd-usb.exe" 5001 --data-dir C:\some\place\for\data` for Windows GUI
+- `"C:\somewhere\rd-usb.exe" 5001 --data-dir C:\some\place\for\data` for Windows standalone binary
+- `"C:\Python\python.exe web.py" 5001 --data-dir C:\some\place\for\data` for Windows Python
+- `/some/python web.py 5001 --data-dir /some/place/for/data` for Linux
+
+On Windows it may be handy to make shortcut for this - just copy existing shortcut and add the parameters at the end of
+Target field separated by space like the first examples. Then you have easy access to your second instance.
+
 Docker
 --
 
