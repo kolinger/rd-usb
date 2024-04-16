@@ -10,13 +10,4 @@ git+https://github.com/pybluez/pybluez.git#egg=pybluez
 
 # pendulum <3.0.0 is used by default since it has wider compatibility for now
 # but pendulum >=3.0.0 is required with newer python
-pendulum~=2.1.2
-
-# GUI-only depenencies
-pywebview~=3.7.0
-pythonnet~=3.0.3
-screeninfo~=0.8.1
-
-# don't forget pip install -U pyinstaller on upgrade
-# and also update requirements_headless.txt if applicable
-# and also update requirements_headless_new.txt if applicable
+pendulum~=3.0.0

@@ -1,5 +1,4 @@
 Flask~=2.2.5
-pendulum~=2.1.2
 pyserial~=3.5
 python-socketio~=5.5.2
 python-engineio~=4.3.1
@@ -8,3 +7,7 @@ appdirs~=1.4.4
 bleak~=0.21.1
 pycryptodome~=3.20.0
 git+https://github.com/pybluez/pybluez.git#egg=pybluez
+
+# pendulum <3.0.0 is used by default since it has wider compatibility for now
+# but pendulum >=3.0.0 is required with newer python
+pendulum~=2.1.2

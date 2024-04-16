@@ -51,6 +51,9 @@ Installation
     - For headless `pip install -r requirements_headless.txt` this version doesn't
       contain dependencies for embedded browser GUI. This is useful if you plan to use CLI/webserver only.
       Also useful on ARM SBCs.
+    - If you encounter failing installing of `pendulum` library then you may need different set of requirements.
+      [See bellow for details](#pendulum-issue).\
+      In this case use `pip install -r requirements_headless_new.txt` as workaround.
 4. Run with `python web.py` - this will spawn web server on http://127.0.0.1:5000, port can be changed
    with first argument: `python web.py 5555`
 
@@ -109,6 +112,28 @@ Tables
 --
 
 ![tables](screenshots/tables.png)
+
+Pendulum issue
+--------------
+
+There is known issue with library named `pendulum` (used for date and time) when used together with 
+newer Python versions. This issue is triggered when installing requirements via pip and looks
+something like this:
+
+```
+...
+Building wheel for pendulum (pyproject.toml) did not run successfully.
+...
+ModuleNotFoundError: No module named 'distutils'
+...
+```
+
+If your installation via pip fails due to this then the solution is to install different version of dependencies.
+Specifically `pip install -r requirements_headless_new.txt` should fix this issue.
+
+This issue is solved with version `>=3.0.0` of this library. Unfortunately as of now
+version `3.0.0` has other compatibility issues (specifically failing Rust compilation
+on systems that don't have prebuilt wheels) thus that's why `<3.0.0` is used by default.
 
 Multiple instances
 ------------------
