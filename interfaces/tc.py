@@ -100,7 +100,8 @@ class TcBleInterface(Interface):
             try:
                 await self.client.write_gatt_char(address, self.encode_command(ASK_FOR_VALUES_COMMAND), True)
             except BleakError as e:
-                if "Characteristic %s was not found" % address in str(e):
+                message = str(e)
+                if "not found" in message and address in message:
                     self.addresses_index += 1
                     if self.addresses_index >= len(SERVER_RX_DATA):
                         raise
