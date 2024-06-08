@@ -16,6 +16,7 @@ except Exception as e:
         supported = False
     else:
         raise
+
 import serial
 
 from interfaces.interface import Interface
@@ -77,16 +78,12 @@ class TcBleInterface(Interface):
     async def _close_run(self):
         try:
             await self.client.stop_notify(SERVER_TX_DATA[self.addresses_index])
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
+        except Exception:
             pass
 
         try:
             await self.client.disconnect()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
+        except Exception:
             pass
 
     def read(self):
@@ -99,16 +96,17 @@ class TcBleInterface(Interface):
             address = SERVER_RX_DATA[self.addresses_index]
             try:
                 await self.client.write_gatt_char(address, self.encode_command(ASK_FOR_VALUES_COMMAND), True)
+
+                if not self.bound:
+                    self.bound = True
+                    await self.client.start_notify(SERVER_TX_DATA[self.addresses_index], self.response.callback)
+
             except BleakError as e:
                 message = str(e)
                 if "not found" in message and address in message:
                     self.addresses_index += 1
                     if self.addresses_index >= len(SERVER_RX_DATA):
                         raise
-
-            if not self.bound:
-                self.bound = True
-                await self.client.start_notify(SERVER_TX_DATA[self.addresses_index], self.response.callback)
 
             expiration = time() + 5
             while not self.response.is_complete() and time() <= expiration:
