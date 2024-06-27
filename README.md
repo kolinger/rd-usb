@@ -24,7 +24,7 @@ Requirements
     - On Linux `rfcomm` and `hcitool` can be used (both provided by bluez package)
         - Retrieve bluetooth address with `hcitool scan`
         - Bind retrieved address to serial port with `rfcomm bind 0 aa:bb:cc:dd:ee:ff`.
-          This step is not persistent. Serial port will disappear after reboot. Also rd-usb needs to
+          This step is not persistent. Serial port will disappear after reboot. Also, rd-usb needs to
           have permissions to use /dev/rfcommX.
 
 Installation
@@ -50,13 +50,13 @@ Installation
     - For GUI: `pip install -r requirements.txt`
     - For headless `pip install -r requirements_headless.txt` this version doesn't
       contain dependencies for embedded browser GUI. This is useful if you plan to use CLI/webserver only.
-      Also useful on ARM SBCs.
+      It's also useful on ARM SBCs.
     - If you encounter failing installing of `pendulum` library then you may need different set of requirements.
       [See bellow for details](#pendulum-issue).\
       In this case use `pip install -r requirements_headless_new.txt` as workaround.
-    - If you encounter failing installation of `pybluez` then make sure you have libbluetooth dependency installed.\
+    - If you encounter failing installation of `pybluez` then make sure you have `libbluetooth` dependency installed.\
       For Debian based distribution this means `apt-get install libbluetooth-dev`.\
-      For Windows you need Microsoft Visual C++ 14.0 or greater distributed as 
+      For Windows you need Microsoft Visual C++ 14.0 or greater distributed via 
       [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
     - There is also currently issue with `pybluez` installation where it fails due to pip version. 
       Make sure you are not using pip 24.x or newer, pip 23.x works fine, if you have newer pip version you can
@@ -190,7 +190,7 @@ sudo apparmor_parser -r -W /etc/apparmor.d/docker-ble
 ```
 
 This may be sometimes unnecessary, but it won't hurt.
-Thanks @thijsputman for his work on [docker-ble](https://github.com/thijsputman/tc66c-mqtt/blob/main/docker/docker-ble).
+Thanks to @thijsputman for his work on [docker-ble](https://github.com/thijsputman/tc66c-mqtt/blob/main/docker/docker-ble).
 
 **Other Linuxes caveats** - unknown - if you know, let me know. The principe is the same but details may differ. 
 If you use AppArmor then you may need custom policy otherwise Bluetooth won't work.
@@ -392,9 +392,9 @@ systemctl enable rd-usb.service
 systemctl start rd-usb.service
 ```
 
-Don't forget to add user of rd-usb.service to `dialout` group to enable access to /dev/rfcomm0 for communication.
+Don't forget to add user of `rd-usb.service` to `dialout` group to enable access to `/dev/rfcomm0` for communication.
 In this example you need to add `www-data` to `dialout` like this `usermod -aG dialout www-data`.
-Webserver as reverse proxy in front of rd-usb.service is suggested (like nginx, apache2, ...).
+Webserver as reverse proxy in front of `rd-usb.service` is suggested (like nginx, apache2, ...).
 
 Development
 --
