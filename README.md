@@ -54,16 +54,23 @@ Installation
     - If you encounter failing installing of `pendulum` library then you may need different set of requirements.
       [See bellow for details](#pendulum-issue).\
       In this case use `pip install -r requirements_headless_new.txt` as workaround.
+    - If you encounter failing installation of `pybluez` then make sure you have libbluetooth dependency installed.\
+      For Debian based distribution this means `apt-get install libbluetooth-dev`.\
+      For Windows you need Microsoft Visual C++ 14.0 or greater distributed as 
+      [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
+    - There is also currently issue with `pybluez` installation where it fails due to pip version. 
+      Make sure you are not using pip 24.x or newer, pip 23.x works fine, if you have newer pip version you can
+      downgrade to latest 23.x for example `C:\Python\python.exe -m pip install --upgrade pip==23.3.2`
 4. Run with `python web.py` - this will spawn web server on http://127.0.0.1:5000, port can be changed
    with first argument: `python web.py 5555`
 
 For additional arguments/options use --help: `python web.py --help`.
 
-On Windows `python` can be found in Python's installation folder.
-For example replace `python` with `C:\Python\python.exe web.py`
-and `pip` with `C:\Python\python.exe -m pip install -r requirements.txt`.
+On Windows `python` can be found in Python's installation folder as `python.exe`.
+For example replace `python web.py` with `C:\Python\python.exe web.py`
+and `pip install -r requirements.txt` with `C:\Python\python.exe -m pip install -r requirements.txt`.
 
-On Linux use `python3` and `pip3`.
+On Linux use `python3` and `pip` inside [virtual environment](https://docs.python.org/3/library/venv.html) (venv).
 
 Usage
 --
