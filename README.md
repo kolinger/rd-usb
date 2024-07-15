@@ -18,7 +18,7 @@ Requirements
       https://github.com/hbldh/bleak#features
 - TC66C USB - meter connected with USB
     - Meter connected with USB exposes itself as serial port
-- UM34C/UM24C/UM25C (legacy serial/COM port method) - meter can be connected as serial port
+- UM34C/UM24C/UM25C Serial/COM port method - meter can be connected as serial port
     - Pairing with Windows Settings works fine. Pin is 1234. After successful pairing some serial ports are
       installed. In my case two. One of them works.
     - On Linux `rfcomm` and `hcitool` can be used (both provided by bluez package)
@@ -98,10 +98,18 @@ Usage
 **Bluetooth issues**
 
 If you have Bluetooth issues then try to close rd-usb, unplug/plug USB meter and start rd-usb again. Bluetooth can be
-sometimes funny and just refuse to work without any reason. If this doesn't help check proximity of your PC and USB
+sometimes funny and just refuses to work without any reason. If this doesn't help check proximity of your PC and USB
 meter, sometimes moving USB meter real close can resolve Bluetooth issues.
 
-**TC66C USB or legacy UM34C/UM24C/UM25C RFCOMM serial/COM port method**
+Also make sure no other connection to the meter exists, like no other application is connected to the meter,
+the RFCOMM isn't bound, if any other connection exists this may break the ability to use or even see the meter
+from rd-usb.
+
+If you find trouble connecting to the UM34C/UM24C/UM25C via the direct Bluetooth method then try
+to use the UMxxC Serial method, where you need to first pair (in Windows) or use rfcomm bind (Linux),
+see [Requirements](#Requirements) above for details.
+
+**TC66C USB or UM34C/UM24C/UM25C Serial/COM port method**
 
 1. Select UM34C/UM24C/UM25C with Serial suffix.
 2. Follow Setup link to find your serial port or click Connect if you already have port selected.
