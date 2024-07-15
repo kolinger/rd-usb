@@ -98,7 +98,7 @@ class Index:
                 writer.writerow(names)
 
                 run_time_offset = None
-                for item in self.storage.fetch_measurements(session["id"]):
+                for item in self.storage.fetch_measurements(session["id"], zeroed=True):
                     if run_time_offset is None and item["resistance"] < 9999.9:
                         run_time_offset = item["timestamp"]
 
@@ -150,7 +150,7 @@ class Index:
             count = self.storage.fetch_measurements_count(session["id"])
             pages = self.prepare_pages(session["id"], page, limit, count)
 
-            measurements = self.storage.fetch_measurements(session["id"], limit, offset)
+            measurements = self.storage.fetch_measurements(session["id"], limit, offset, zeroed=True)
 
         return render_template(
             "data.html",
@@ -160,6 +160,7 @@ class Index:
             measurements=measurements,
             pages=pages,
             page="data",
+            accumulated="zeroed" if request.cookies.get("accumulated") == "zeroed" else "actual"
         )
 
     def prepare_pages(self, session_id, page, limit, count, blocks=10):

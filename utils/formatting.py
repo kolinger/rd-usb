@@ -13,8 +13,23 @@ class Format:
         "resistance", "accumulated_current", "accumulated_power",
     ]
     export_fields = [
-        "time", "voltage", "current", "power", "temperature", "data_plus", "data_minus", "resistance",
-        "accumulated_current", "accumulated_power", "accumulated_time", "run_time", "run_time_seconds", "timestamp",
+        "time",
+        "voltage",
+        "current",
+        "power",
+        "temperature",
+        "data_plus",
+        "data_minus",
+        "resistance",
+        "accumulated_current",
+        "accumulated_power",
+        "accumulated_time",
+        "run_time",
+        "run_time_seconds",
+        "timestamp",
+        "zeroed_accumulated_current",
+        "zeroed_accumulated_power",
+        "zeroed_accumulated_time",
     ]
     field_names = {
         "time": "Time",
@@ -31,6 +46,9 @@ class Format:
         "run_time": "Run time",
         "run_time_seconds": "Run time (seconds)",
         "timestamp": "Unix time",
+        "zeroed_accumulated_current": "Zerod accumulated current (mAh)",
+        "zeroed_accumulated_power": "Zerod accumulated power (mWh)",
+        "zeroed_accumulated_time": "Zerod accumulated time (seconds)",
     }
 
     def __init__(self, version=None):
@@ -89,6 +107,26 @@ class Format:
             parts.append(self.accumulated_time(data))
         return " / ".join(parts)
 
+    def zeroed_accumulated_current(self, data):
+        return self.format_value(data, "zeroed_accumulated_current") + " mAh"
+
+    def zeroed_accumulated_power(self, data):
+        return self.format_value(data, "zeroed_accumulated_power") + " mWh"
+
+    def zeroed_accumulated_time(self, data):
+        if data["zeroed_accumulated_time"] is None:
+            return ""
+        return str(data["zeroed_accumulated_time"]) + " seconds"
+
+    def zeroed_accumulated(self, data):
+        parts = [
+            self.zeroed_accumulated_current(data),
+            self.zeroed_accumulated_power(data),
+        ]
+        if data["zeroed_accumulated_time"] is not None:
+            parts.append(self.zeroed_accumulated_time(data))
+        return " / ".join(parts)
+
     def resistance(self, data):
         return str(data["resistance"]) + " Ω"
 
@@ -132,6 +170,8 @@ class Format:
         elif name in ["data_plus", "data_minus"]:
             precision = 2
         elif name in ["accumulated_current", "accumulated_power"]:
+            precision = 0
+        elif name in ["zeroed_accumulated_current", "zeroed_accumulated_power"]:
             precision = 0
         elif name == "resistance":
             precision = 1

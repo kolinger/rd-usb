@@ -167,7 +167,7 @@ class Storage:
             cursor.execute("SELECT COUNT(id) AS count FROM measurements WHERE session_id = ?", (session,))
             return int(cursor.fetchone()["count"])
 
-    def fetch_measurements(self, session, limit=None, offset=None):
+    def fetch_measurements(self, session, limit=None, offset=None, zeroed=False):
         with closing(self.connect()) as sqlite:
             cursor = sqlite.cursor()
             sql = "SELECT * FROM measurements WHERE session_id = ? ORDER BY timestamp ASC"
@@ -180,7 +180,22 @@ class Storage:
         for index, item in enumerate(items):
             items[index] = self.converter.convert(item)
 
+        if zeroed:
+            self.fill_zeroed_accumulated_fields_for_measurements(session, items)
+
         return items
+
+    def fill_zeroed_accumulated_fields_for_measurements(self, session, measurements):
+        first_measurements = self.fetch_measurements(session, 1, 0)
+        first_measurement = first_measurements[0] if len(first_measurements) else None
+        for item in measurements:
+            for name, value in list(item.items()):
+                if name.startswith("accumulated_"):
+                    zeroed_name = "zeroed_%s" % name
+                    if name not in first_measurement or first_measurement[name] is None:
+                        item[zeroed_name] = None
+                    else:
+                        item[zeroed_name] = value - first_measurement[name]
 
     def fetch_last_measurement_by_name(self, name):
         with closing(self.connect()) as sqlite:

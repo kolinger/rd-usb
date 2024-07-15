@@ -92,6 +92,18 @@ ntdrt.application = {
             }, 0);
         });
 
+        $(document).on('click', '.data .table [data-accumulated]', function (e) {
+            e.preventDefault();
+            var control = $(this);
+            var accumulated = control.attr('data-accumulated');
+            var table = control.closest('.table');
+            table.find('[data-accumulated]').show();
+            table.find('[data-accumulated="' + accumulated + '"]').hide();
+            table.find('[data-accumulated-value]').hide();
+            table.find('[data-accumulated-value="' + accumulated + '"]').show();
+            Cookies.set('accumulated', accumulated, {expires: 365});
+        });
+
         var logWrapper = $('#log');
         var previousLogPosition = 0;
         logWrapper.on('scroll', function () {

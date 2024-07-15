@@ -29,7 +29,15 @@
                     <th>Temperature</th>
                     <th>Data +/-</th>
                     <th>Mode</th>
-                    <th>Accumulated</th>
+                    <th>
+                        Accumulated
+                        <a href="#" data-accumulated="actual"{% if accumulated == "actual" %} style="display:none"{% endif %}>
+                            show actual
+                        </a>
+                        <a href="#" data-accumulated="zeroed"{% if accumulated == "zeroed" %} style="display:none"{% endif %}>
+                            show zeroed
+                        </a>
+                    </th>
                     <th>Resistance</th>
                 </tr>
             </thead>
@@ -43,7 +51,14 @@
                         <td>{{ format.temperature(item) }}</td>
                         <td>{{ format.data(item) }}</td>
                         <td>{{ format.mode(item) }}</td>
-                        <td>{{ format.accumulated(item) }}</td>
+                        <td>
+                            <span data-accumulated-value="actual"{% if accumulated == "zeroed" %} style="display:none"{% endif %}>
+                                {{ format.accumulated(item) }}
+                            </span>
+                            <span data-accumulated-value="zeroed"{% if accumulated == "actual" %} style="display:none"{% endif %}>
+                                {{ format.zeroed_accumulated(item) }}
+                            </span>
+                        </td>
                         <td>{{ format.resistance(item) }}</td>
                     </tr>
                 {% endfor %}
