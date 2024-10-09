@@ -398,6 +398,8 @@ ntdrt.application = {
                             'temperature': '#417200',
                             'accumulated_current': '#a824ea',
                             'accumulated_power': '#014d98',
+                            'zeroed_accumulated_current': '#a824ea',
+                            'zeroed_accumulated_power': '#014d98',
                             'resistance': '#6cc972',
                             'fallback': '#373737'
                         };
@@ -414,6 +416,8 @@ ntdrt.application = {
                             'temperature': '#549100',
                             'accumulated_current': '#9c78bc',
                             'accumulated_power': '#997b18',
+                            'zeroed_accumulated_current': '#9c78bc',
+                            'zeroed_accumulated_power': '#997b18',
                             'resistance': '#56a05a',
                             'fallback': '#373737'
                         };

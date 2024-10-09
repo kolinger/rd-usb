@@ -225,8 +225,8 @@ class Index:
 
         data = []
         if session:
-            for item in self.storage.fetch_measurements(session["id"]):
-                if left_axis in item:
+            for item in self.storage.fetch_measurements(session["id"], zeroed=True):
+                if left_axis in item and right_axis in item:
                     data.append({
                         "date": format.timestamp(item),
                         "left": item[left_axis],
