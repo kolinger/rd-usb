@@ -197,14 +197,31 @@ class Index:
         if selected == "":
             last_measurement = self.storage.fetch_last_measurement()
 
+        metrics = {
+            "voltage": "Voltage (V)",
+            "current": "Current (A)",
+            "current-m": "Current (mA)",
+            "power": "Power (W)",
+            "temperature": "Temperature (°C)",
+            "accumulated_current": "Accumulated current (mAh)",
+            "accumulated_power": "Accumulated power (mWh)",
+            "zeroed_accumulated_current": "Accumulated current (mAh) [zeroed]",
+            "zeroed_accumulated_power": "Accumulated power (mWh) [zeroed]",
+            "resistance": "Resistance (Ω)",
+        }
+
+        left_axis = request.args.get("left_axis", default="voltage")
+        right_axis = request.args.get("right_axis", default="current")
+
         return render_template(
             "graph.html",
             format=format,
             sessions=sessions,
             selected=selected,
             item=last_measurement,
-            left_axis="voltage",
-            right_axis="current",
+            metrics=metrics,
+            left_axis=left_axis,
+            right_axis=right_axis,
             colors=self.config.read("colors", "colorful"),
             page="graph"
         )

@@ -3,7 +3,7 @@
     <form class="form-inline" method="get">
         <div class="form-group">
             <label for="name">Session name</label>
-            <select class="form-control" name="session" data-submit-on-change>
+            <select class="form-control" name="session" data-submit-on-change data-focus-me>
                 {% for session in sessions %}
                     <option value="{{ session["id"] }}"{% if selected == session["id"] %} selected{% endif %}>
                         {{ session["name"] }} ({{ format_datetime(session["timestamp"]) }}{% if session["version"] %}, {{ session["version"] }}{% endif %})
@@ -11,6 +11,8 @@
                 {% endfor %}
             </select>
         </div>
+        <input type="hidden" name="left_axis" value="{{ left_axis }}" />
+        <input type="hidden" name="right_axis" value="{{ right_axis }}" />
         <button type="submit" class="btn btn-default">Select</button>
     </form>
 
@@ -50,32 +52,20 @@
 
     <div class="graph-data">
         <form class="form-inline" id="graph-settings">
+            {% macro render_select(name, current) %}
+                <select class="form-control" name="{{ name }}">
+                    {% for key, name in metrics|items %}
+                        <option value="{{ key }}"{{ format.selected(current, key) }}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            {% endmacro %}
             <div class="form-group">
                 <label for="left_axis">Left axis</label>
-                <select class="form-control" name="left_axis">
-                    <option value="voltage" selected>Voltage (V)</option>
-                    <option value="current">Current (A)</option>
-                    <option value="power">Power (W)</option>
-                    <option value="temperature">Temperature (°C)</option>
-                    <option value="accumulated_current">Accumulated current (mAh)</option>
-                    <option value="accumulated_power">Accumulated power (mWh)</option>
-                    <option value="zeroed_accumulated_current">Accumulated current (mAh) [zeroed]</option>
-                    <option value="zeroed_accumulated_power">Accumulated power (mWh) [zeroed]</option>
-                    <option value="resistance">Resistance (Ω)</option>
-                </select>
+                {{ render_select("left_axis", left_axis) }}
             </div>
             <div class="form-group">
                 <label for="right_axis">Right axis</label>
-                <select class="form-control" name="right_axis">
-                    <option value="voltage">Voltage (V)</option>
-                    <option value="current" selected>Current (A)</option>
-                    <option value="current-m">Current (mA)</option>
-                    <option value="power">Power (W)</option>
-                    <option value="temperature">Temperature (°C)</option>
-                    <option value="accumulated_current">Accumulated current (mAh)</option>
-                    <option value="accumulated_power">Accumulated power (mWh)</option>
-                    <option value="resistance">Resistance (Ω)</option>
-                </select>
+                {{ render_select("right_axis", right_axis) }}
             </div>
             <div class="form-group">
                 <label for="colors">Colors</label>

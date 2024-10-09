@@ -3,7 +3,7 @@
     <form class="form-inline" method="get">
         <div class="form-group">
             <label for="name">Session name</label>
-            <select class="form-control" name="session" data-submit-on-change>
+            <select class="form-control" name="session" data-submit-on-change data-focus-me>
                 {% for session in sessions %}
                     <option value="{{ session["id"] }}"{% if selected == session["id"] %} selected{% endif %}>
                         {{ session["name"] }} ({{ format_datetime(session["timestamp"]) }}{% if session["version"] %}, {{ session["version"] }}{% endif %})

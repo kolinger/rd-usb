@@ -188,3 +188,8 @@ class Format:
         if precision > 0:
             return ("{:.%sf}" % precision).format(value)
         return "{:d}".format(int(round(value)))
+
+    def selected(self, current, reference):
+        if current == reference:
+            return " selected"
+        return ""

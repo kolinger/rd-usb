@@ -115,6 +115,8 @@ ntdrt.application = {
             }
         });
 
+        $('[data-focus-me]').focus();
+
         var logWrapper = $('#log');
         var previousLogPosition = 0;
         logWrapper.on('scroll', function () {
@@ -457,6 +459,22 @@ ntdrt.application = {
                 url += '&right_axis=' + right_axis;
                 url += '&colors=' + colorsMode;
 
+                var pageUrl = new URL(window.location.href);
+                var changed = false;
+                if (pageUrl.searchParams.get('left_axis') !== left_axis) {
+                    pageUrl.searchParams.set('left_axis', left_axis);
+                    $('input[type="hidden"][name="left_axis"]').val(left_axis);
+                    changed = true;
+                }
+                if (pageUrl.searchParams.get('right_axis') !== right_axis) {
+                    pageUrl.searchParams.set('right_axis', right_axis);
+                    $('input[type="hidden"][name="right_axis"]').val(right_axis);
+                    changed = true;
+                }
+                if (changed) {
+                    window.history.pushState(null, null, pageUrl.toString());
+                }
+
                 var loadingDots = $('.graph .loading [data-dots]');
                 var loadingTimer = setInterval(function () {
                     var count = loadingDots.text().length;
@@ -712,7 +730,7 @@ ntdrt.application = {
 
             create();
 
-            $(document).on('submit', '#graph-settings', function (e) {
+            $(document).on('submit', '#graph-settings', function () {
                 create();
                 return false;
             });
