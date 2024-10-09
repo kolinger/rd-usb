@@ -104,6 +104,17 @@ ntdrt.application = {
             Cookies.set('accumulated', accumulated, {expires: 365});
         });
 
+        $(document).on('change', '[data-submit-on-change]', function () {
+            var control = $(this);
+            var form = control.closest('form');
+            var selector = control.attr('data-submit-on-change');
+            if (selector) {
+                form.find(selector).trigger('click');
+            } else {
+                form.submit();
+            }
+        });
+
         var logWrapper = $('#log');
         var previousLogPosition = 0;
         logWrapper.on('scroll', function () {
