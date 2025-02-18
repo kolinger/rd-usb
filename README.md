@@ -90,6 +90,13 @@ Usage
 7. Connection will be hopefully successful, and you will see live measurements in graph.
    Otherwise, read log for error messages.
 
+The 100ms and 250ms polling period (‘sample rate’) is misleading since only some meters support polling this quick,
+and it seems that all meters have estimated internal sample rate of 2 Hz (500ms) thus even if the meter supports
+polling at 10 Hz / 100ms (like the TC66C over USB, while the UM24/25/34 has estimated polling rate up to 3 Hz) this
+isn't useful since the extra samples are just duplicates of previous sample. In the original implementation the
+polling period wasn't polling period but the gap between samples, that's why in past the 100ms/250ms value did have
+meaningful purpose, but currently these options are essentially without purpose and left as legacy.
+
 **TC66C Bluetooth**
 
 1. Make sure your OS is supported and has bluetooth with BLE support (Bluetooth Low Energy)
