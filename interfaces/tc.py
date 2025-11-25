@@ -7,7 +7,6 @@ from Crypto.Cipher import AES
 
 try:
     from bleak import BleakClient, BleakError, BleakScanner
-    from bleak import discover
     supported = True
 except Exception as e:
     message = str(e)

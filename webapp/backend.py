@@ -391,6 +391,8 @@ class Daemon:
                 self.emit("log", traceback.format_exc())
                 reconnect = True
 
+        return None  # this will never happen, it's just to satisfy the IDE
+
     def emit(self, event, data=None):
         if event == "log":
             self.storage.log(data)
