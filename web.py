@@ -32,7 +32,7 @@ def url_ok(url):
 def parse_cli(open_browser=True, webview=False):
     parser = argparse.ArgumentParser()
     parser.add_argument("port", nargs="?", type=int, default=5000, help="Port for web server to listen on")
-    parser.add_argument("--listen", type=str, default="0.0.0.0",
+    parser.add_argument("--listen", type=str, default="127.0.0.1" if webview else "0.0.0.0",
                         help="Listen on address of specific interface (defaults to all interfaces)")
     parser.add_argument("--on-receive", help="Call this program/script when new measurements are received")
     parser.add_argument("--on-receive-interval", type=int, default=60, help="Interval for --on-receive (in seconds)")
@@ -46,7 +46,7 @@ def parse_cli(open_browser=True, webview=False):
     return parser.parse_args()
 
 
-def run(args=None, embedded=False):
+def run(args=None, embedded=False, webview=None):
     if not args:
         args = parse_cli()
 
@@ -68,6 +68,7 @@ def run(args=None, embedded=False):
 
     app = Flask(__name__, static_folder=static_path)
     app.config["embedded"] = embedded
+    app.config["webview"] = webview
     app.config["app_prefix"] = prefix
     app.register_blueprint(Index().register())
 

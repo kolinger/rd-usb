@@ -3,8 +3,11 @@ import io
 from math import ceil, floor
 import os
 import pathlib
+import re
 from time import time
 import traceback
+import typing
+from urllib.parse import quote
 
 from flask import url_for, request, jsonify, redirect, flash, make_response, current_app
 from flask.blueprints import Blueprint
@@ -18,6 +21,9 @@ from utils.formatting import Format
 from utils.storage import Storage
 from utils.version import version
 from webapp.backend import Daemon
+
+if typing.TYPE_CHECKING:
+    from app import Webview
 
 
 class Index:
@@ -89,52 +95,71 @@ class Index:
             format = Format(session["version"])
 
             if request.args.get("export") == "":
-                string = io.StringIO()
-                writer = csv.writer(string)
+                file_name = self.sanitize_filename(session["name"])
 
-                names = []
-                for field in format.export_fields:
-                    names.append(format.field_name(field))
-                writer.writerow(names)
+                skip = False
+                path = None
+                if current_app.config["webview"]:
+                    webview: Webview = current_app.config["webview"]
+                    path = webview.get_save_file_target(name="%s.csv" % file_name)
+                    skip = not path
 
-                run_time_offset = None
-                for item in self.storage.fetch_measurements(session["id"], zeroed=True):
-                    if run_time_offset is None and item["resistance"] < 9999.9:
-                        run_time_offset = item["timestamp"]
+                if not skip:
+                    if path:
+                        file = open(path, "w", encoding="utf-8", newline="")
+                        writer = csv.writer(file)
+                        string = None
+                    else:
+                        file = None
+                        string = io.StringIO()
+                        writer = csv.writer(string)
 
-                    rune_time = 0
-                    if run_time_offset is not None:
-                        rune_time = round(item["timestamp"] - run_time_offset)
-
-                    values = []
+                    names = []
                     for field in format.export_fields:
-                        if field == "time":
-                            values.append(format.time(item))
-                        elif field == "run_time":
-                            remaining = rune_time
-                            hours = floor(remaining / 3600)
-                            remaining -= hours * 3600
-                            minutes = floor(remaining / 60)
-                            remaining -= minutes * 60
-                            seconds = remaining
-                            parts = [
-                                hours,
-                                minutes,
-                                seconds,
-                            ]
-                            for index, value in enumerate(parts):
-                                parts[index] = str(value).zfill(2)
-                            values.append(":".join(parts))
-                        elif field == "run_time_seconds":
-                            values.append(rune_time)
-                        else:
-                            values.append(item[field])
-                    writer.writerow(values)
+                        names.append(format.field_name(field))
+                    writer.writerow(names)
 
-                output = make_response(string.getvalue())
-                output.headers["Content-Disposition"] = "attachment; filename=" + session["name"] + ".csv"
-                output.headers["Content-type"] = "text/csv"
-                return output
+                    run_time_offset = None
+                    for item in self.storage.fetch_measurements(session["id"], zeroed=True):
+                        if run_time_offset is None and item["resistance"] < 9999.9:
+                            run_time_offset = item["timestamp"]
+
+                        rune_time = 0
+                        if run_time_offset is not None:
+                            rune_time = round(item["timestamp"] - run_time_offset)
+
+                        values = []
+                        for field in format.export_fields:
+                            if field == "time":
+                                values.append(format.time(item))
+                            elif field == "run_time":
+                                remaining = rune_time
+                                hours = floor(remaining / 3600)
+                                remaining -= hours * 3600
+                                minutes = floor(remaining / 60)
+                                remaining -= minutes * 60
+                                seconds = remaining
+                                parts = [
+                                    hours,
+                                    minutes,
+                                    seconds,
+                                ]
+                                for index, value in enumerate(parts):
+                                    parts[index] = str(value).zfill(2)
+                                values.append(":".join(parts))
+                            elif field == "run_time_seconds":
+                                values.append(rune_time)
+                            else:
+                                values.append(item[field])
+                        writer.writerow(values)
+
+                    if file:
+                        file.close()
+                    else:
+                        output = make_response(string.getvalue())
+                        output.headers["Content-Disposition"] = "attachment; filename*=UTF-8''%s" % quote(file_name)
+                        output.headers["Content-type"] = "text/csv"
+                        return output
 
             elif request.args.get("destroy") == "":
                 if selected == "":
@@ -578,3 +603,16 @@ class Index:
     def format_date(self, timestamp):
         date = pendulum.from_timestamp(timestamp)
         return date.in_timezone("local").format("YYYY-MM-DD HH:mm:ss")
+
+    def sanitize_filename(self, name):
+        name = re.sub(r"[<>:\"/\\|?*]", "_", name)
+        name = name.rstrip("_. ")
+        reserved = {
+            "CON", "PRN", "AUX", "NUL",
+            *(f"COM{i}" for i in range(1, 10)),
+            *(f"LPT{i}" for i in range(1, 10)),
+        }
+        base = name.split(".")[0].upper()
+        if base in reserved:
+            name = "_%s" % name
+        return name

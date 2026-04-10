@@ -66,6 +66,15 @@ class Webview:
         self.window.events.closing += self.on_close
         webview.start(debug=debug)
 
+    def get_save_file_target(self, name):
+        result = self.window.create_file_dialog(
+            webview.FileDialog.SAVE,
+            save_filename=name
+        )
+        if result:
+            return result[0]
+        return None
+
     def on_loaded(self):
         self.window.events.loaded -= self.on_loaded
         self.loaded = True
@@ -159,7 +168,7 @@ if __name__ == "__main__":
             pass  # cef only
 
         def callback():
-            run(args, embedded=True)
+            run(args, embedded=True, webview=view)
 
         url = "http://%s:%s" % ("127.0.0.1", args.port)
         view = Webview(url)
