@@ -95,13 +95,13 @@ class Index:
             format = Format(session["version"])
 
             if request.args.get("export") == "":
-                file_name = self.sanitize_filename(session["name"])
+                file_name = "%s.csv" % self.sanitize_filename(session["name"])
 
                 skip = False
                 path = None
                 if current_app.config["webview"]:
                     webview: Webview = current_app.config["webview"]
-                    path = webview.get_save_file_target(name="%s.csv" % file_name)
+                    path = webview.get_save_file_target(name=file_name)
                     skip = not path
 
                 if not skip:
