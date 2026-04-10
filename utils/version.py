@@ -23,9 +23,7 @@ def detect(fallback="v0", force=False):
 
         return output
 
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except:
+    except Exception:
         pass
 
     return fallback

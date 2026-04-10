@@ -110,10 +110,8 @@ class Backend(Namespace):
 
             self.emit("scan-result", "\n".join(result))
 
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            logging.exception(sys.exc_info()[0])
+        except Exception as e:
+            logging.exception(e)
             self.emit("scan-result", traceback.format_exc())
 
     def on_scan_ble(self, sid):
@@ -131,10 +129,8 @@ class Backend(Namespace):
 
             self.emit("scan-result", "\n".join(result))
 
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            logging.exception(sys.exc_info()[0])
+        except Exception as e:
+            logging.exception(e)
             self.emit("scan-result", traceback.format_exc())
 
     def on_scan_serial(self, sid):
@@ -179,10 +175,8 @@ class Backend(Namespace):
 
             self.emit("scan-result", "\n".join(result))
 
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            logging.exception(sys.exc_info()[0])
+        except Exception as e:
+            logging.exception(e)
             self.emit("scan-result", traceback.format_exc())
 
     def on_close(self, sid):
@@ -278,10 +272,8 @@ class Daemon:
                 if sleep_time > 0:
                     sleep(sleep_time)
 
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            logging.exception(sys.exc_info()[0])
+        except Exception as e:
+            logging.exception(e)
             self.emit("log", traceback.format_exc())
             self.emit("log-error")
         finally:
@@ -361,17 +353,15 @@ class Daemon:
                     reconnect = False
 
                 return callback()
-            except (KeyboardInterrupt, SystemExit):
-                raise
             except FatalErrorException:
                 raise
-            except:
-                count -= 1
-                logging.exception(sys.exc_info()[0])
+            except Exception as e:
+                logging.exception(e)
 
                 if self.timeout > 0 and deadline <= time():
                     raise
 
+                count -= 1
                 if self.retry_count > 0 and count <= 0:
                     raise
 

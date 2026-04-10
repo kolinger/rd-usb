@@ -426,9 +426,7 @@ class Index:
 
                 previous_timestamp = timestamp
 
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
+        except Exception:
             message = "Failed to connect:"
             exception = traceback.format_exc()
             self.storage.log(exception)

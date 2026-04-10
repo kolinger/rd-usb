@@ -128,10 +128,8 @@ def run(args=None, embedded=False):
 
         app.run(host=listen, port=port, threaded=True, use_reloader=False)
 
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except:
-        logging.exception(sys.exc_info()[0])
+    except Exception as e:
+        logging.exception(e)
 
 
 if __name__ == "__main__":

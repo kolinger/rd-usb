@@ -113,9 +113,7 @@ class Receiver:
             if result is None:
                 return default
             return result
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
+        except Exception:
             return traceback.format_exc()
 
 
